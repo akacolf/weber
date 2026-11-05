@@ -12,8 +12,8 @@ const PROJECTS = [
   {
     title: "Liquid Chroma Engine",
     description:
-      "A real-time WebGL liquid shader library with chromatic dispersion, dynamic viscosity, and reactive cursor lighting.",
-    tags: ["React Three Fiber", "GLSL", "WebGL", "TypeScript"],
+      "A real-time color and design tokens engine with dynamic contrast calculation, fluid gradients, and live WCAG audit metrics.",
+    tags: ["TypeScript", "CSS Variables", "Tailwind CSS", "Design Tokens"],
     demoUrl: "https://github.com",
     githubUrl: "https://github.com",
     color: "rgba(56, 189, 248, 0.2)",
@@ -22,8 +22,8 @@ const PROJECTS = [
   {
     title: "Glassmorphism UI System",
     description:
-      "Cross-browser optical refraction component suite with simulated depth, normal specular highlights, and zero layout shift.",
-    tags: ["Next.js", "Liquid Glass", "Tailwind CSS", "Design Systems"],
+      "Cross-browser optical glass component suite with simulated depth, normal specular highlights, and zero layout shift.",
+    tags: ["Next.js 16", "Shadcn UI", "Tailwind CSS", "Accessibility"],
     demoUrl: "https://github.com",
     githubUrl: "https://github.com",
     color: "rgba(168, 85, 247, 0.2)",
@@ -32,8 +32,8 @@ const PROJECTS = [
   {
     title: "Spatial Data Visualizer",
     description:
-      "High-density 3D data dashboard visualizing real-time financial metrics, network latencies, and node clusters.",
-    tags: ["Three.js", "Web Workers", "Shadcn UI", "Playwright"],
+      "High-density data dashboard visualizing real-time financial metrics, network latencies, and node clusters.",
+    tags: ["Next.js", "Web Workers", "Shadcn UI", "Playwright"],
     demoUrl: "https://github.com",
     githubUrl: "https://github.com",
     color: "rgba(236, 72, 153, 0.2)",
