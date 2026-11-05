@@ -15,7 +15,7 @@ export default function Logo({ className = "" }: LogoProps) {
       aria-label="Khalid Al Shareef - Home"
     >
       {/* Visual Symbol / Monogram Mark */}
-      <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-800/80 via-neutral-900/90 to-black/90 p-[1px] border border-white/10 shadow-lg shadow-black/40 group-hover:border-cyan-500/50 group-hover:shadow-cyan-500/10 transition-all duration-300">
+      <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-neutral-800/80 via-neutral-900/90 to-black/90 p-[1px] border border-white/10 shadow-lg shadow-black/40 group-hover:border-cyan-500/50 group-hover:shadow-cyan-500/10 transition-all duration-300">
         {/* Glow ambient background */}
         <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/20 via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
 
@@ -23,7 +23,7 @@ export default function Logo({ className = "" }: LogoProps) {
           viewBox="0 0 32 32"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="relative w-6 h-6 transform group-hover:scale-105 transition-transform duration-300"
+          className="relative w-5 h-5 transform group-hover:scale-105 transition-transform duration-300"
           aria-hidden="true"
         >
           <defs>
@@ -57,15 +57,10 @@ export default function Logo({ className = "" }: LogoProps) {
         </svg>
       </div>
 
-      {/* Brand Wordmark & Label */}
-      <div className="flex flex-col">
-        <span className="font-semibold text-sm tracking-tight text-foreground/90 group-hover:text-foreground transition-colors flex items-center gap-1.5">
-          Khalid Al Shareef
-        </span>
-        <span className="text-[11px] font-mono tracking-wider text-muted-foreground uppercase">
-          Portfolio
-        </span>
-      </div>
+      {/* Brand Wordmark */}
+      <span className="font-semibold text-sm tracking-tight text-foreground/90 group-hover:text-foreground transition-colors">
+        Khalid Al Shareef
+      </span>
     </Link>
   );
 }
