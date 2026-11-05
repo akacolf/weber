@@ -1,81 +1,152 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Logo from "@/components/Logo";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Menu, ArrowUpRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight } from "lucide-react";
+
+export const NAV_LINKS = [
+  { label: "About me", href: "/about" },
+  { label: "Products I've built", href: "/products" },
+  { label: "My resume/cv", href: "/resume" },
+  { label: "Contact me", href: "/contact" },
+];
 
 export default function Navbar() {
-  return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-background/50 border-b border-border/40 transition-colors">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-950 border border-white/10 flex items-center justify-center shadow-md group-hover:border-sky-500/40 group-hover:shadow-sky-500/10 transition-all">
-            <span className="font-mono font-bold text-sm bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent">
-              C
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-sm tracking-tight group-hover:text-primary transition-colors">
-              Portfolio
-            </span>
-            <span className="text-[11px] text-muted-foreground font-mono">
-              v2.0 • Systems &amp; UI
-            </span>
-          </div>
-        </Link>
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-          <Link
-            href="#projects"
-            className="hover:text-foreground transition-colors"
-          >
-            Projects
-          </Link>
-          <Link
-            href="#experience"
-            className="hover:text-foreground transition-colors"
-          >
-            Experience
-          </Link>
-          <Link
-            href="#skills"
-            className="hover:text-foreground transition-colors"
-          >
-            Skills
-          </Link>
-          <Link
-            href="#contact"
-            className="hover:text-foreground transition-colors"
-          >
-            Contact
-          </Link>
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Brand / Logo */}
+        <Logo />
+
+        {/* Desktop Navigation */}
+        <nav
+          aria-label="Main Navigation"
+          className="hidden md:flex items-center gap-1 lg:gap-2 px-3 py-1.5 rounded-full bg-secondary/30 border border-border/40 backdrop-blur-sm"
+        >
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-full text-xs lg:text-sm font-medium transition-all duration-200 select-none",
+                  isActive
+                    ? "bg-accent text-accent-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                )}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Right CTA */}
-        <div className="flex items-center gap-3">
+        {/* Right Section: Status Badge & Quick CTA */}
+        <div className="hidden sm:flex items-center gap-3">
           <Badge
             variant="outline"
-            className="hidden sm:inline-flex items-center gap-1.5 py-1 px-2.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs"
+            className="hidden lg:inline-flex items-center gap-1.5 py-1 px-2.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-mono"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Available for hire
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            Available for projects
           </Badge>
 
           <Link
-            href="#contact"
+            href="/contact"
             className={cn(
               buttonVariants({ size: "sm" }),
-              "rounded-full shadow-sm hover:shadow-cyan-500/20"
+              "rounded-full shadow-sm hover:shadow-cyan-500/20 text-xs font-medium px-4"
             )}
           >
-            Let&apos;s Talk
+            Get in touch
             <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
           </Link>
+        </div>
+
+        {/* Mobile Navigation Trigger */}
+        <div className="flex md:hidden items-center gap-2">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon" }),
+                "rounded-lg text-muted-foreground hover:text-foreground"
+              )}
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5" />
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85vw] max-w-sm p-6 flex flex-col justify-between">
+              <div>
+                <SheetHeader className="text-left pb-6 border-b border-border/40">
+                  <SheetTitle className="flex items-center gap-2 text-base font-semibold">
+                    <Sparkles className="w-4 h-4 text-cyan-400" />
+                    Navigation
+                  </SheetTitle>
+                </SheetHeader>
+
+                <nav aria-label="Mobile Navigation" className="flex flex-col gap-1.5 pt-6">
+                  {NAV_LINKS.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className={cn(
+                          "px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between",
+                          isActive
+                            ? "bg-accent text-accent-foreground font-semibold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                        )}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <span>{link.label}</span>
+                        <ArrowUpRight className="h-4 w-4 opacity-40" />
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              <div className="pt-6 border-t border-border/40 flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Available for new opportunities
+                </div>
+                <Link
+                  href="/contact"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    buttonVariants({ size: "sm" }),
+                    "w-full rounded-xl"
+                  )}
+                >
+                  Contact me
+                  <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
