@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ interface ProjectItem {
   id: string;
   title: string;
   domain: string;
+  badges?: string[];
   year?: string;
   description: string;
   tags: string[];
@@ -23,45 +25,22 @@ const FEATURED_PROJECTS: ProjectItem[] = [
     id: "quantum-club",
     title: "Quantum Club",
     domain: "Blockchain • AI",
+    badges: ["Blockchain • AI", "Web app"],
     year: "2024",
     description:
-      "Web3 super app that combined DeFi, social, and AI. Scaled to 3000 users and counting and received a grant from STON.fi.",
+      "Web3 super app that combined DeFi, social, and AI on TON. Scaled to 3000 users and counting and received a grant from STON.fi.",
     tags: ["TypeScript", "JavaScript", "Next.js", "Tailwind CSS"],
-    githubUrl: "https://github.com/akacolf/quantum-club-app",
+    githubUrl: "https://github.com/akacolf/quantum-club-webapp",
     renderPreview: () => (
-      <div className="relative w-full h-36 rounded-xl bg-muted/40 border border-border/50 p-3.5 flex flex-col justify-between overflow-hidden group-hover:border-foreground/20 transition-colors">
-        {/* Web3 App Header Status */}
-        <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
-          <span className="flex items-center gap-1.5 text-foreground font-medium">
-            <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-            STON.fi Ecosystem Grant
-          </span>
-          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-            3,000+ Users
-          </span>
-        </div>
-
-        {/* Metric / Feature Showcase Pill Grid */}
-        <div className="grid grid-cols-3 gap-2 my-auto">
-          <div className="p-2 rounded-lg bg-background/80 border border-border/40 text-center">
-            <div className="text-[10px] font-mono text-muted-foreground">DeFi Layer</div>
-            <div className="text-xs font-mono font-semibold text-foreground mt-0.5">Automated</div>
-          </div>
-          <div className="p-2 rounded-lg bg-background/80 border border-border/40 text-center">
-            <div className="text-[10px] font-mono text-muted-foreground">AI Engine</div>
-            <div className="text-xs font-mono font-semibold text-cyan-600 dark:text-cyan-400 mt-0.5">Integrated</div>
-          </div>
-          <div className="p-2 rounded-lg bg-background/80 border border-border/40 text-center">
-            <div className="text-[10px] font-mono text-muted-foreground">Social Graph</div>
-            <div className="text-xs font-mono font-semibold text-foreground mt-0.5">Web3 P2P</div>
-          </div>
-        </div>
-
-        {/* Status footer */}
-        <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground pt-1.5 border-t border-border/30">
-          <span className="text-foreground/80">Network: TON / STON.fi</span>
-          <span className="text-emerald-600 dark:text-emerald-400">Live Production</span>
-        </div>
+      <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
+        <Image
+          src="/projects/quantumclub.png"
+          alt="Quantum Club banner"
+          fill
+          className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority
+        />
       </div>
     ),
   },
@@ -115,17 +94,23 @@ export default function Projects() {
               <div className="space-y-4">
                 {/* Card Meta Bar */}
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span className="font-mono text-xs text-muted-foreground">
                       0{index + 1}
                     </span>
                     <span className="font-mono text-muted-foreground/40 text-xs">/</span>
-                    <Badge
-                      variant="outline"
-                      className="rounded-full text-[10px] font-mono border-border/60 bg-background/50 text-muted-foreground"
-                    >
-                      {project.domain}
-                    </Badge>
+                    {(project.badges && project.badges.length > 0
+                      ? project.badges
+                      : [project.domain]
+                    ).map((badge) => (
+                      <Badge
+                        key={badge}
+                        variant="outline"
+                        className="rounded-full text-[10px] font-mono border-border/60 bg-background/50 text-muted-foreground"
+                      >
+                        {badge}
+                      </Badge>
+                    ))}
                   </div>
 
                   {/* Actions - single external button */}

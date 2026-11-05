@@ -265,12 +265,16 @@ test.describe('Featured Projects Showcase tests', () => {
     await expect(projectsSection.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
     await expect(
       projectsSection.getByText(
-        'Web3 super app that combined DeFi, social, and AI. Scaled to 3000 users and counting and received a grant from STON.fi.'
+        'Web3 super app that combined DeFi, social, and AI on TON. Scaled to 3000 users and counting and received a grant from STON.fi.'
       )
     ).toBeVisible();
 
-    // Verify domain badge
+    // Verify badges (Blockchain • AI and Web app)
     await expect(projectsSection.getByText('Blockchain • AI')).toBeVisible();
+    await expect(projectsSection.getByText('Web app', { exact: true })).toBeVisible();
+
+    // Verify project banner image is displayed
+    await expect(projectsSection.getByAltText(/quantum club banner/i)).toBeVisible();
 
     // Verify spec callout badge (highlight) was deleted
     await expect(projectsSection.getByText(/contrast audit/i)).not.toBeVisible();
@@ -285,7 +289,7 @@ test.describe('Featured Projects Showcase tests', () => {
     // Verify only ONE external action button exists for the project
     const actionButtons = projectsSection.locator('article a[target="_blank"]');
     await expect(actionButtons).toHaveCount(1);
-    await expect(actionButtons).toHaveAttribute('href', 'https://github.com/akacolf/quantum-club-app');
+    await expect(actionButtons).toHaveAttribute('href', 'https://github.com/akacolf/quantum-club-webapp');
   });
 
   test('featured projects link to products archive', async ({ page }) => {
