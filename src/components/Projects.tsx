@@ -65,7 +65,7 @@ export default function Projects() {
             </h2>
 
             <p className="text-muted-foreground text-sm sm:text-base max-w-xl leading-relaxed">
-              From a wide range of categories, including web apps, AI, mobile and desktop.
+              From a wide range of categories, including web apps, AI, mobile, and desktop.
             </p>
           </div>
 
