@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Terminal as TerminalIcon,
@@ -10,7 +10,104 @@ import {
   Check,
   FileCode,
   ChevronRight,
+  RotateCcw,
 } from "lucide-react";
+
+interface Token {
+  text: string;
+  className?: string;
+  pause?: number;
+}
+
+const TOKENS: Token[] = [
+  // Line 01
+  { text: "// Self-documenting developer specification\n", className: "text-neutral-500 italic", pause: 240 },
+
+  // Line 02
+  { text: "interface", className: "text-purple-400" },
+  { text: " " },
+  { text: "theGuyWhoNeverStopsCoding", className: "text-amber-300" },
+  { text: " {\n", className: "text-neutral-400", pause: 140 },
+
+  // Line 03
+  { text: "  ", className: "text-neutral-400" },
+  { text: "name", className: "text-sky-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: "string", className: "text-emerald-300" },
+  { text: ";\n", className: "text-neutral-400", pause: 100 },
+
+  // Line 04
+  { text: "  ", className: "text-neutral-400" },
+  { text: "role", className: "text-sky-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: "string", className: "text-emerald-300" },
+  { text: ";\n", className: "text-neutral-400", pause: 100 },
+
+  // Line 05
+  { text: "  ", className: "text-neutral-400" },
+  { text: "focus", className: "text-sky-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: "string[]", className: "text-emerald-300" },
+  { text: ";\n", className: "text-neutral-400", pause: 100 },
+
+  // Line 06
+  { text: "  ", className: "text-neutral-400" },
+  { text: "status", className: "text-sky-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: '"cooking"', className: "text-emerald-300" },
+  { text: " | ", className: "text-neutral-400" },
+  { text: '"coffee time"', className: "text-emerald-300" },
+  { text: ";\n", className: "text-neutral-400", pause: 180 },
+
+  // Line 07
+  { text: "}\n", className: "text-neutral-400", pause: 180 },
+
+  // Line 08
+  { text: "\n", pause: 120 },
+
+  // Line 09
+  { text: "export const", className: "text-purple-400" },
+  { text: " " },
+  { text: "developer", className: "text-sky-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: "theGuyWhoNeverStopsCoding", className: "text-amber-300" },
+  { text: " = {\n", className: "text-neutral-400", pause: 180 },
+
+  // Line 10
+  { text: "  ", className: "text-neutral-400" },
+  { text: "name", className: "text-neutral-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: '"Colf"', className: "text-emerald-300" },
+  { text: ",\n", className: "text-neutral-400", pause: 120 },
+
+  // Line 11
+  { text: "  ", className: "text-neutral-400" },
+  { text: "role", className: "text-neutral-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: '"Full-Stack & AI Engineer"', className: "text-emerald-300" },
+  { text: ",\n", className: "text-neutral-400", pause: 150 },
+
+  // Line 12
+  { text: "  ", className: "text-neutral-400" },
+  { text: "focus", className: "text-neutral-300" },
+  { text: ": [", className: "text-neutral-400" },
+  { text: '"High-Performance Web"', className: "text-emerald-300" },
+  { text: ", ", className: "text-neutral-400" },
+  { text: '"Design Systems"', className: "text-emerald-300" },
+  { text: ", ", className: "text-neutral-400" },
+  { text: '"Architecture"', className: "text-emerald-300" },
+  { text: "],\n", className: "text-neutral-400", pause: 160 },
+
+  // Line 13
+  { text: "  ", className: "text-neutral-400" },
+  { text: "status", className: "text-neutral-300" },
+  { text: ": ", className: "text-neutral-400" },
+  { text: '"cooking"', className: "text-emerald-300", pause: 350 },
+  { text: ",\n", className: "text-neutral-400", pause: 120 },
+
+  // Line 14
+  { text: "};", className: "text-neutral-400", pause: 7000 },
+];
 
 interface CodeTerminalProps {
   className?: string;
@@ -19,31 +116,100 @@ interface CodeTerminalProps {
 export default function CodeTerminal({ className }: CodeTerminalProps) {
   const [activeTab, setActiveTab] = useState<"code" | "terminal">("code");
   const [copied, setCopied] = useState(false);
+  const [charIndex, setCharIndex] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Flatten tokens into individual characters with styling and pause metadata
+  const flatChars = useMemo(() => {
+    const chars: { char: string; className?: string; pause?: number }[] = [];
+    TOKENS.forEach((token) => {
+      const len = token.text.length;
+      for (let i = 0; i < len; i++) {
+        chars.push({
+          char: token.text[i],
+          className: token.className,
+          pause: i === len - 1 ? token.pause : undefined,
+        });
+      }
+    });
+    return chars;
+  }, []);
+
+  const totalChars = flatChars.length;
+
+  // Character-by-character live typing engine with custom pauses
+  useEffect(() => {
+    if (activeTab !== "code") return;
+
+    if (charIndex >= totalChars) {
+      // Pause at completion, then restart smoothly
+      timerRef.current = setTimeout(() => {
+        setCharIndex(0);
+      }, 7000);
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
+    }
+
+    const currentChar = flatChars[charIndex];
+    const pauseTime = currentChar?.pause || 0;
+    // Human-like slight rhythm variance
+    const baseSpeed = Math.floor(Math.random() * 12) + 24;
+    const delay = pauseTime > 0 ? pauseTime : baseSpeed;
+
+    timerRef.current = setTimeout(() => {
+      setCharIndex((prev) => prev + 1);
+    }, delay);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [charIndex, totalChars, flatChars, activeTab]);
+
+  const handleReplay = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCharIndex(0);
+  };
 
   const handleCopy = () => {
-    const codeSnippet = `interface theGuyWhoNeverStopsCoding {
-  name: string;
-  role: string;
-  focus: string[];
-  status: "cooking" | "coffee time";
-}
-
-export const developer: theGuyWhoNeverStopsCoding = {
-  name: "Colf",
-  role: "Full-Stack & AI Engineer",
-  focus: ["High-Performance Web", "Design Systems", "Architecture"],
-  status: "cooking",
-};`;
-    navigator.clipboard.writeText(codeSnippet);
+    const fullCode = TOKENS.map((t) => t.text).join("");
+    navigator.clipboard.writeText(fullCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // Reconstruct lines from the currently visible characters
+  const { renderedLines, currentLineNum, currentColNum } = useMemo(() => {
+    type Chunk = { text: string; className?: string };
+    const lines: Chunk[][] = [[]];
+
+    for (let i = 0; i < charIndex; i++) {
+      const item = flatChars[i];
+      if (item.char === "\n") {
+        lines.push([]);
+      } else {
+        const currentLine = lines[lines.length - 1];
+        const lastChunk = currentLine[currentLine.length - 1];
+        if (lastChunk && lastChunk.className === item.className) {
+          lastChunk.text += item.char;
+        } else {
+          currentLine.push({ text: item.char, className: item.className });
+        }
+      }
+    }
+
+    const currentLineNum = lines.length;
+    const currentLineChunks = lines[lines.length - 1] || [];
+    const currentColNum = currentLineChunks.reduce((acc, c) => acc + c.text.length, 0) + 1;
+
+    return { renderedLines: lines, currentLineNum, currentColNum };
+  }, [charIndex, flatChars]);
 
   return (
     <div
       className={cn(
         "relative w-full max-w-3xl mx-auto rounded-2xl overflow-hidden text-left",
-        "border border-white/10 bg-neutral-950/95 backdrop-blur-2xl shadow-2xl shadow-black/60",
+        "border border-white/10 bg-neutral-950/95 backdrop-blur-2xl shadow-2xl shadow-black/70",
         "transition-all duration-300",
         className
       )}
@@ -70,7 +236,7 @@ export const developer: theGuyWhoNeverStopsCoding = {
             />
           </div>
 
-          {/* Editor Tabs */}
+          {/* Editor Tabs with gray icon */}
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -82,7 +248,8 @@ export const developer: theGuyWhoNeverStopsCoding = {
                   : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40"
               )}
             >
-              <FileCode className="w-3.5 h-3.5 text-sky-400" />
+              {/* Gray file icon */}
+              <FileCode className="w-3.5 h-3.5 text-neutral-400" />
               <span>developer.ts</span>
             </button>
 
@@ -96,14 +263,25 @@ export const developer: theGuyWhoNeverStopsCoding = {
                   : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40"
               )}
             >
-              <TerminalIcon className="w-3.5 h-3.5 text-emerald-400" />
+              <TerminalIcon className="w-3.5 h-3.5 text-neutral-400" />
               <span>bash ~ live</span>
             </button>
           </div>
         </div>
 
-        {/* Right Action: Clean Copy Control */}
-        <div className="flex items-center">
+        {/* Right Actions: Replay & Copy */}
+        <div className="flex items-center gap-1">
+          {activeTab === "code" && (
+            <button
+              type="button"
+              onClick={handleReplay}
+              title="Replay typing"
+              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800/60 transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleCopy}
@@ -119,7 +297,7 @@ export const developer: theGuyWhoNeverStopsCoding = {
         </div>
       </div>
 
-      {/* Sub-bar: Clean Editor Breadcrumb Path (no badges/git duplicates) */}
+      {/* Sub-bar: Clean Editor Breadcrumb Path */}
       <div className="flex items-center px-4 py-1.5 bg-neutral-950/70 border-b border-white/5 text-[11px] font-mono text-neutral-400 select-none">
         <div className="flex items-center gap-1.5">
           <span className="text-neutral-500">portfolio</span>
@@ -131,174 +309,155 @@ export const developer: theGuyWhoNeverStopsCoding = {
       </div>
 
       {/* Main Terminal / Editor Content Area */}
-      <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto min-h-[350px]">
+      <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto min-h-[380px]">
         {activeTab === "code" ? (
           <div className="flex gap-4 sm:gap-6">
             {/* Line Numbers Gutter */}
-            <div className="flex flex-col text-right text-neutral-600 select-none font-mono text-xs sm:text-sm space-y-1 pr-3 border-r border-white/5 min-w-[28px]">
-              {Array.from({ length: 14 }).map((_, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "leading-relaxed",
-                    i === 12 ? "text-white font-semibold" : ""
-                  )}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              ))}
+            <div className="flex flex-col text-right select-none font-mono text-xs sm:text-sm space-y-1 pr-3 border-r border-white/5 min-w-[28px]">
+              {Array.from({ length: 14 }).map((_, i) => {
+                const lineNum = i + 1;
+                const isActive = lineNum === currentLineNum;
+                return (
+                  <span
+                    key={i}
+                    className={cn(
+                      "leading-relaxed transition-colors",
+                      isActive ? "text-white font-semibold" : "text-neutral-600"
+                    )}
+                  >
+                    {String(lineNum).padStart(2, "0")}
+                  </span>
+                );
+              })}
             </div>
 
-            {/* Code Body */}
+            {/* Live Typing Code Body */}
             <div className="flex-1 space-y-1 font-mono text-neutral-200">
-              {/* Line 01 */}
-              <p className="text-neutral-500 italic">
-                {"// Self-documenting developer specification"}
-              </p>
+              {renderedLines.map((chunks, lineIdx) => {
+                const lineNum = lineIdx + 1;
+                const isCurrentTypingLine = lineNum === currentLineNum;
+                const isLineEmpty = chunks.length === 0 || (chunks.length === 1 && chunks[0].text === "");
 
-              {/* Line 02 */}
-              <p>
-                <span className="text-purple-400">interface</span>{" "}
-                <span className="text-amber-300">theGuyWhoNeverStopsCoding</span>{" "}
-                <span className="text-neutral-400">{"{"}</span>
-              </p>
+                return (
+                  <div
+                    key={lineIdx}
+                    className={cn(
+                      "flex items-center transition-colors min-h-[1.5rem]",
+                      isCurrentTypingLine && "bg-white/[0.04] -mx-4 px-4 py-0.5 rounded"
+                    )}
+                  >
+                    {isLineEmpty ? (
+                      <span className="select-none text-transparent">&nbsp;</span>
+                    ) : (
+                      <p className="whitespace-pre">
+                        {chunks.map((chunk, cIdx) => (
+                          <span key={cIdx} className={chunk.className}>
+                            {chunk.text}
+                          </span>
+                        ))}
+                      </p>
+                    )}
 
-              {/* Line 03 */}
-              <p className="pl-4">
-                <span className="text-sky-300">name</span>
-                <span className="text-neutral-400">:</span>{" "}
-                <span className="text-emerald-300">string</span>
-                <span className="text-neutral-400">;</span>
-              </p>
-
-              {/* Line 04 */}
-              <p className="pl-4">
-                <span className="text-sky-300">role</span>
-                <span className="text-neutral-400">:</span>{" "}
-                <span className="text-emerald-300">string</span>
-                <span className="text-neutral-400">;</span>
-              </p>
-
-              {/* Line 05 */}
-              <p className="pl-4">
-                <span className="text-sky-300">focus</span>
-                <span className="text-neutral-400">:</span>{" "}
-                <span className="text-emerald-300">string[]</span>
-                <span className="text-neutral-400">;</span>
-              </p>
-
-              {/* Line 06 */}
-              <p className="pl-4">
-                <span className="text-sky-300">status</span>
-                <span className="text-neutral-400">:</span>{" "}
-                <span className="text-emerald-300">
-                  &quot;cooking&quot; | &quot;coffee time&quot;
-                </span>
-                <span className="text-neutral-400">;</span>
-              </p>
-
-              {/* Line 07 */}
-              <p>
-                <span className="text-neutral-400">{"}"}</span>
-              </p>
-
-              {/* Line 08 */}
-              <p className="text-neutral-600 select-none">&nbsp;</p>
-
-              {/* Line 09 */}
-              <p>
-                <span className="text-purple-400">export const</span>{" "}
-                <span className="text-sky-300">developer</span>
-                <span className="text-neutral-400">:</span>{" "}
-                <span className="text-amber-300">theGuyWhoNeverStopsCoding</span>{" "}
-                <span className="text-neutral-400">=</span>{" "}
-                <span className="text-neutral-400">{"{"}</span>
-              </p>
-
-              {/* Line 10 */}
-              <p className="pl-4">
-                <span className="text-neutral-300">name:</span>{" "}
-                <span className="text-emerald-300">&quot;Colf&quot;</span>
-                <span className="text-neutral-400">,</span>
-              </p>
-
-              {/* Line 11 */}
-              <p className="pl-4">
-                <span className="text-neutral-300">role:</span>{" "}
-                <span className="text-emerald-300">
-                  &quot;Full-Stack &amp; AI Engineer&quot;
-                </span>
-                <span className="text-neutral-400">,</span>
-              </p>
-
-              {/* Line 12 */}
-              <p className="pl-4">
-                <span className="text-neutral-300">focus:</span>{" "}
-                <span className="text-neutral-400">[</span>
-                <span className="text-emerald-300">&quot;High-Performance Web&quot;</span>
-                <span className="text-neutral-400">, </span>
-                <span className="text-emerald-300">&quot;Design Systems&quot;</span>
-                <span className="text-neutral-400">, </span>
-                <span className="text-emerald-300">&quot;Architecture&quot;</span>
-                <span className="text-neutral-400">],</span>
-              </p>
-
-              {/* Line 13: Active writing line with subtle highlight & white cursor */}
-              <p className="pl-4 flex items-center bg-white/[0.04] -mx-4 px-4 py-0.5 rounded">
-                <span className="text-neutral-300">status:</span>{" "}
-                <span className="text-emerald-300 ml-2">&quot;cooking&quot;</span>
-                {/* Clean White Live Cursor */}
-                <span
-                  className="inline-block w-2 h-4 sm:h-4.5 bg-white ml-1 rounded-[1px] animate-pulse"
-                  aria-hidden="true"
-                />
-              </p>
-
-              {/* Line 14 */}
-              <p>
-                <span className="text-neutral-400">{"};"}</span>
-              </p>
+                    {/* Cursor renders at the active typing line */}
+                    {isCurrentTypingLine && (
+                      <span
+                        className="inline-block w-2 h-4 sm:h-4.5 bg-white ml-0.5 rounded-[1px] animate-pulse align-middle"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : (
-          /* Terminal / Bash Output Mode */
-          <div className="space-y-3 font-mono text-neutral-300 text-xs sm:text-sm">
-            <div className="flex items-center gap-2 text-neutral-500">
-              <span className="text-emerald-400">➜</span>
-              <span className="text-sky-400">portfolio</span>
-              <span className="text-neutral-400">git:(main)</span>
-              <span>npm run dev</span>
+          /* Real Turbopack Bash Output Mode */
+          <div className="space-y-1 font-mono text-neutral-300 text-xs sm:text-sm">
+            {/* Header */}
+            <div className="text-purple-400 font-medium pb-1">
+              ▲ Next.js 16.4.5 <span className="text-neutral-400 font-normal">(Turbopack)</span>
             </div>
 
-            <div className="pl-4 border-l border-white/5 space-y-1.5 text-neutral-400">
+            {/* Endpoints */}
+            <div className="text-neutral-400 space-y-0.5 pb-1 text-xs sm:text-sm">
+              <p>
+                - Local:{"        "}
+                <span className="text-neutral-200 underline decoration-neutral-700">http://localhost:3000</span>
+              </p>
+              <p>
+                - Network:{"      "}
+                <span className="text-neutral-200">http://10.39.7.229:3000</span>
+              </p>
+            </div>
+
+            {/* Ready details */}
+            <div className="space-y-0.5 pb-2 text-neutral-200">
+              <p>
+                <span className="text-emerald-400 font-semibold">✓</span> Ready in 1120ms
+              </p>
+              <p>
+                <span className="text-emerald-400 font-semibold">✓</span> Running next.config.ts took 269ms
+              </p>
+              <p className="text-neutral-400">- Cache Components enabled</p>
+              <p className="text-neutral-400">- Partial Prefetching enabled</p>
+            </div>
+
+            {/* Compilation log stream */}
+            <div className="pt-2 space-y-0.5 text-neutral-400 border-t border-white/5">
               <p className="text-neutral-300">
-                <span className="text-sky-400">▲ Next.js 16.4.5</span> (Turbopack)
+                <span className="text-neutral-400">○</span> Compiling / ...
               </p>
-              <p className="text-emerald-400">✓ Ready in 450ms at http://localhost:3000</p>
-              <p className="text-neutral-400">
-                ✓ Libre Baskerville typography &amp; Geist Mono initialized
+              <p className="text-neutral-300">
+                GET / <span className="text-emerald-400 font-semibold">200</span> in 1374ms{" "}
+                <span className="text-neutral-500">(next.js: 652ms, application-code: 722ms)</span>
               </p>
-              <p className="text-neutral-400">
-                ✓ Liquid glass shaders &amp; design tokens loaded
+              <p className="text-neutral-200">
+                <span className="text-emerald-400 font-semibold">✓</span> Compiled in 1552ms
               </p>
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <span className="text-emerald-400">➜</span>
-              <span className="text-sky-400">portfolio</span>
-              <span className="text-neutral-400">git:(main)</span>
-              <span className="inline-block w-2 h-4 bg-white ml-1 animate-pulse" />
+              <p className="text-neutral-200">
+                <span className="text-emerald-400 font-semibold">✓</span> Compiled in 956ms
+              </p>
+              <p className="text-neutral-300">
+                GET / <span className="text-emerald-400 font-semibold">200</span> in 95ms{" "}
+                <span className="text-neutral-500">(next.js: 12ms, application-code: 83ms)</span>
+              </p>
+              <p className="text-neutral-300">
+                GET / <span className="text-emerald-400 font-semibold">200</span> in 107ms{" "}
+                <span className="text-neutral-500">(next.js: 3ms, application-code: 104ms)</span>
+              </p>
+              <p className="text-neutral-200">
+                <span className="text-emerald-400 font-semibold">✓</span> Compiled in 1274ms
+              </p>
+              <p className="text-neutral-200">
+                <span className="text-emerald-400 font-semibold">✓</span> Compiled in 220ms
+              </p>
+              <p className="text-neutral-300">
+                GET / <span className="text-emerald-400 font-semibold">200</span> in 114ms{" "}
+                <span className="text-neutral-500">(next.js: 3ms, application-code: 112ms)</span>
+              </p>
+              <p className="text-neutral-300">
+                GET / <span className="text-emerald-400 font-semibold">200</span> in 152ms{" "}
+                <span className="text-neutral-500">(next.js: 12ms, application-code: 140ms)</span>
+              </p>
+              <p className="text-neutral-200">
+                <span className="text-emerald-400 font-semibold">✓</span> Compiled in 140ms
+              </p>
+              <p className="text-neutral-300 flex items-center">
+                GET / <span className="text-emerald-400 font-semibold mr-1">200</span> in 81ms{" "}
+                <span className="text-neutral-500 ml-1">(next.js: 7ms, application-code: 74ms)</span>
+                <span className="inline-block w-2 h-4 bg-white ml-1.5 animate-pulse" />
+              </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Editor Status Bar Footer (Real VS Code style) */}
+      {/* Editor Status Bar Footer (Real VS Code style with gray icons) */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-900/80 border-t border-white/5 text-[11px] font-mono text-neutral-400 select-none">
-        {/* Left Status Items */}
+        {/* Left Status Items with gray GitBranch */}
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1 hover:text-neutral-200 transition-colors">
-            <GitBranch className="w-3 h-3 text-sky-400" />
+          <span className="flex items-center gap-1 text-neutral-400 hover:text-neutral-200 transition-colors">
+            <GitBranch className="w-3 h-3 text-neutral-400" />
             <span>main</span>
           </span>
           <span className="text-neutral-700">|</span>
@@ -308,15 +467,18 @@ export const developer: theGuyWhoNeverStopsCoding = {
           </span>
         </div>
 
-        {/* Right Editor Diagnostics */}
+        {/* Right Editor Diagnostics with gray TypeScript */}
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline">Ln 13, Col 24</span>
+          <span className="hidden sm:inline">
+            Ln {currentLineNum}, Col {currentColNum}
+          </span>
           <span className="hidden sm:inline text-neutral-700">|</span>
           <span className="hidden sm:inline">Spaces: 2</span>
           <span className="hidden sm:inline text-neutral-700">|</span>
           <span>UTF-8</span>
           <span className="text-neutral-700">|</span>
-          <span className="text-sky-400 font-medium">TypeScript</span>
+          {/* Gray TypeScript text */}
+          <span className="text-neutral-400">TypeScript</span>
         </div>
       </div>
     </div>
