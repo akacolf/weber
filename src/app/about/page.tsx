@@ -1,3 +1,3 @@
 export default function AboutPage() {
-  return <main className="min-h-screen bg-background" />;
+  return <main className="flex-1 bg-background" />;
 }

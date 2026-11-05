@@ -93,3 +93,83 @@ test.describe('Header & Navigation tests', () => {
     expect(bodyFont.toLowerCase()).toContain('libre baskerville');
   });
 });
+
+test.describe('Footer tests', () => {
+  test('footer renders with brand, navigation, connect links, and copyright', async ({ page }) => {
+    await page.goto('/');
+
+    const footer = page.locator('footer[aria-label="Site Footer"]');
+    await expect(footer).toBeVisible();
+
+    // Verify logo and brand presence
+    const footerLogo = footer.locator('a[aria-label*="Khalid Al Shareef"]');
+    await expect(footerLogo).toBeVisible();
+
+    // Verify bio / tagline text
+    await expect(
+      footer.getByText('Creative Developer & Technologist crafting performant digital experiences')
+    ).toBeVisible();
+
+    // Verify availability badge
+    await expect(footer.getByText('Available for selected projects')).toBeVisible();
+
+    // Verify footer navigation links
+    const footerNav = footer.locator('nav[aria-label="Footer Navigation"]');
+    await expect(footerNav.getByRole('link', { name: 'Home' })).toBeVisible();
+    await expect(footerNav.getByRole('link', { name: 'About me' })).toBeVisible();
+    await expect(footerNav.getByRole('link', { name: "Products I've built" })).toBeVisible();
+    await expect(footerNav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
+    await expect(footerNav.getByRole('link', { name: 'Contact me' })).toBeVisible();
+
+    // Verify connect links
+    await expect(footer.getByRole('link', { name: /GitHub/i })).toBeVisible();
+    await expect(footer.getByRole('link', { name: /X \/ Twitter/i })).toBeVisible();
+    await expect(footer.getByRole('link', { name: /LinkedIn/i })).toBeVisible();
+    await expect(footer.getByRole('link', { name: /Email/i })).toBeVisible();
+
+    // Verify copyright and tech colophon
+    await expect(footer.getByText(/© \d{4} Khalid Al Shareef/i)).toBeVisible();
+    await expect(footer.getByText(/Crafted with Next.js & Libre Baskerville/i)).toBeVisible();
+
+    // Verify back to top button
+    const backToTopBtn = footer.locator('button[aria-label="Back to top"]');
+    await expect(backToTopBtn).toBeVisible();
+  });
+
+  test('footer navigation links navigate to correct pages', async ({ page }) => {
+    await page.goto('/');
+
+    const footer = page.locator('footer[aria-label="Site Footer"]');
+    const footerNav = footer.locator('nav[aria-label="Footer Navigation"]');
+
+    // Click "Contact me" in footer
+    await footerNav.getByRole('link', { name: 'Contact me' }).click();
+    await expect(page).toHaveURL(/\/contact$/);
+
+    // Click "Products I've built" in footer from contact page
+    const contactFooterNav = page.locator('footer[aria-label="Site Footer"] nav[aria-label="Footer Navigation"]');
+    await contactFooterNav.getByRole('link', { name: "Products I've built" }).click();
+    await expect(page).toHaveURL(/\/products$/);
+
+    // Click "Home" in footer
+    const productsFooterNav = page.locator('footer[aria-label="Site Footer"] nav[aria-label="Footer Navigation"]');
+    await productsFooterNav.getByRole('link', { name: 'Home' }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test('back to top button triggers page scroll', async ({ page }) => {
+    await page.goto('/');
+
+    // Scroll down
+    await page.evaluate(() => window.scrollTo(0, 500));
+
+    const footer = page.locator('footer[aria-label="Site Footer"]');
+    const backToTopBtn = footer.locator('button[aria-label="Back to top"]');
+
+    await backToTopBtn.click();
+    // Verify scroll position approaches top
+    await expect.poll(async () => {
+      return await page.evaluate(() => window.scrollY);
+    }).toBeLessThan(100);
+  });
+});
