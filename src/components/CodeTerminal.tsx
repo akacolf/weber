@@ -3,14 +3,13 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
-  Code2,
   Terminal as TerminalIcon,
   GitBranch,
   CheckCircle2,
   Copy,
   Check,
   FileCode,
-  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 
 interface CodeTerminalProps {
@@ -22,6 +21,20 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
+    const codeSnippet = `interface theGuyWhoNeverStopsCoding {
+  name: string;
+  role: string;
+  focus: string[];
+  status: "cooking" | "coffee time";
+}
+
+export const developer: theGuyWhoNeverStopsCoding = {
+  name: "Colf",
+  role: "Full-Stack & AI Engineer",
+  focus: ["High-Performance Web", "Design Systems", "Architecture"],
+  status: "cooking",
+};`;
+    navigator.clipboard.writeText(codeSnippet);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -29,20 +42,20 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
   return (
     <div
       className={cn(
-        "relative w-full max-w-3xl mx-auto rounded-2xl overflow-hidden",
-        "border border-white/10 bg-neutral-950/90 backdrop-blur-2xl shadow-2xl shadow-sky-950/20",
+        "relative w-full max-w-3xl mx-auto rounded-2xl overflow-hidden text-left",
+        "border border-white/10 bg-neutral-950/95 backdrop-blur-2xl shadow-2xl shadow-black/60",
         "transition-all duration-300",
         className
       )}
     >
-      {/* Top Ambient Glow Accent */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-sky-400/40 to-transparent" />
+      {/* Top Subtle Specular Highlight Line */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
       {/* Window Title & Tabs Bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-900/70 border-b border-white/5 select-none">
-        {/* Left: macOS Window Traffic Lights */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 mr-2">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-900/80 border-b border-white/5 select-none">
+        {/* Left: macOS Window Traffic Lights + Tabs */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 mr-1">
             <span
               className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e] inline-block shadow-sm"
               aria-label="Close"
@@ -63,9 +76,9 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
               type="button"
               onClick={() => setActiveTab("code")}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono transition-all",
+                "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono transition-all",
                 activeTab === "code"
-                  ? "bg-neutral-800/90 text-neutral-100 font-medium shadow-sm border border-white/5"
+                  ? "bg-neutral-800/90 text-neutral-100 font-medium shadow-sm border border-white/10"
                   : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40"
               )}
             >
@@ -77,9 +90,9 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
               type="button"
               onClick={() => setActiveTab("terminal")}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-mono transition-all",
+                "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono transition-all",
                 activeTab === "terminal"
-                  ? "bg-neutral-800/90 text-neutral-100 font-medium shadow-sm border border-white/5"
+                  ? "bg-neutral-800/90 text-neutral-100 font-medium shadow-sm border border-white/10"
                   : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/40"
               )}
             >
@@ -89,15 +102,8 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
           </div>
         </div>
 
-        {/* Right Utility Actions */}
-        <div className="flex items-center gap-3">
-          {/* Status Pill */}
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Interactive</span>
-          </div>
-
-          {/* Copy Button */}
+        {/* Right Action: Clean Copy Control */}
+        <div className="flex items-center">
           <button
             type="button"
             onClick={handleCopy}
@@ -113,28 +119,19 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
         </div>
       </div>
 
-      {/* Sub-bar: Breadcrumb Path & Git info */}
-      <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-950/60 border-b border-white/5 text-[11px] font-mono text-neutral-400 select-none">
-        <div className="flex items-center gap-2">
+      {/* Sub-bar: Clean Editor Breadcrumb Path (no badges/git duplicates) */}
+      <div className="flex items-center px-4 py-1.5 bg-neutral-950/70 border-b border-white/5 text-[11px] font-mono text-neutral-400 select-none">
+        <div className="flex items-center gap-1.5">
           <span className="text-neutral-500">portfolio</span>
-          <span className="text-neutral-600">/</span>
+          <ChevronRight className="w-3 h-3 text-neutral-600" />
           <span className="text-neutral-500">src</span>
-          <span className="text-neutral-600">/</span>
+          <ChevronRight className="w-3 h-3 text-neutral-600" />
           <span className="text-neutral-200 font-medium">developer.ts</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-sky-400/90">
-            <GitBranch className="w-3 h-3" />
-            <span>main*</span>
-          </span>
-          <span className="hidden sm:inline text-neutral-600">•</span>
-          <span className="hidden sm:inline text-neutral-400">TypeScript 5.7</span>
         </div>
       </div>
 
       {/* Main Terminal / Editor Content Area */}
-      <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto min-h-[340px]">
+      <div className="p-4 sm:p-6 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto min-h-[350px]">
         {activeTab === "code" ? (
           <div className="flex gap-4 sm:gap-6">
             {/* Line Numbers Gutter */}
@@ -144,7 +141,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
                   key={i}
                   className={cn(
                     "leading-relaxed",
-                    i === 11 ? "text-sky-400 font-semibold" : ""
+                    i === 12 ? "text-white font-semibold" : ""
                   )}
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -154,16 +151,19 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
 
             {/* Code Body */}
             <div className="flex-1 space-y-1 font-mono text-neutral-200">
+              {/* Line 01 */}
               <p className="text-neutral-500 italic">
                 {"// Self-documenting developer specification"}
               </p>
 
+              {/* Line 02 */}
               <p>
-                <span className="text-violet-400">interface</span>{" "}
-                <span className="text-amber-300">CreativeTechnologist</span>{" "}
+                <span className="text-purple-400">interface</span>{" "}
+                <span className="text-amber-300">theGuyWhoNeverStopsCoding</span>{" "}
                 <span className="text-neutral-400">{"{"}</span>
               </p>
 
+              {/* Line 03 */}
               <p className="pl-4">
                 <span className="text-sky-300">name</span>
                 <span className="text-neutral-400">:</span>{" "}
@@ -171,6 +171,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
                 <span className="text-neutral-400">;</span>
               </p>
 
+              {/* Line 04 */}
               <p className="pl-4">
                 <span className="text-sky-300">role</span>
                 <span className="text-neutral-400">:</span>{" "}
@@ -178,6 +179,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
                 <span className="text-neutral-400">;</span>
               </p>
 
+              {/* Line 05 */}
               <p className="pl-4">
                 <span className="text-sky-300">focus</span>
                 <span className="text-neutral-400">:</span>{" "}
@@ -185,42 +187,51 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
                 <span className="text-neutral-400">;</span>
               </p>
 
+              {/* Line 06 */}
               <p className="pl-4">
                 <span className="text-sky-300">status</span>
                 <span className="text-neutral-400">:</span>{" "}
                 <span className="text-emerald-300">
-                  &quot;crafting&quot; | &quot;available&quot;
+                  &quot;cooking&quot; | &quot;coffee time&quot;
                 </span>
                 <span className="text-neutral-400">;</span>
               </p>
 
+              {/* Line 07 */}
               <p>
                 <span className="text-neutral-400">{"}"}</span>
               </p>
 
-              <p className="pt-2">
-                <span className="text-violet-400">export const</span>{" "}
+              {/* Line 08 */}
+              <p className="text-neutral-600 select-none">&nbsp;</p>
+
+              {/* Line 09 */}
+              <p>
+                <span className="text-purple-400">export const</span>{" "}
                 <span className="text-sky-300">developer</span>
                 <span className="text-neutral-400">:</span>{" "}
-                <span className="text-amber-300">CreativeTechnologist</span>{" "}
+                <span className="text-amber-300">theGuyWhoNeverStopsCoding</span>{" "}
                 <span className="text-neutral-400">=</span>{" "}
                 <span className="text-neutral-400">{"{"}</span>
               </p>
 
+              {/* Line 10 */}
               <p className="pl-4">
                 <span className="text-neutral-300">name:</span>{" "}
                 <span className="text-emerald-300">&quot;Colf&quot;</span>
                 <span className="text-neutral-400">,</span>
               </p>
 
+              {/* Line 11 */}
               <p className="pl-4">
                 <span className="text-neutral-300">role:</span>{" "}
                 <span className="text-emerald-300">
-                  &quot;Full-Stack Engineer &amp; Creative Technologist&quot;
+                  &quot;Full-Stack &amp; AI Engineer&quot;
                 </span>
                 <span className="text-neutral-400">,</span>
               </p>
 
+              {/* Line 12 */}
               <p className="pl-4">
                 <span className="text-neutral-300">focus:</span>{" "}
                 <span className="text-neutral-400">[</span>
@@ -232,17 +243,18 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
                 <span className="text-neutral-400">],</span>
               </p>
 
-              {/* Active writing line with cursor */}
-              <p className="pl-4 flex items-center">
+              {/* Line 13: Active writing line with subtle highlight & white cursor */}
+              <p className="pl-4 flex items-center bg-white/[0.04] -mx-4 px-4 py-0.5 rounded">
                 <span className="text-neutral-300">status:</span>{" "}
-                <span className="text-emerald-300 ml-2">&quot;crafting&quot;</span>
-                {/* Blinking Live Cursor */}
+                <span className="text-emerald-300 ml-2">&quot;cooking&quot;</span>
+                {/* Clean White Live Cursor */}
                 <span
-                  className="inline-block w-2 h-4 sm:h-4.5 bg-sky-400 ml-1 rounded-[1px] animate-pulse"
+                  className="inline-block w-2 h-4 sm:h-4.5 bg-white ml-1 rounded-[1px] animate-pulse"
                   aria-hidden="true"
                 />
               </p>
 
+              {/* Line 14 */}
               <p>
                 <span className="text-neutral-400">{"};"}</span>
               </p>
@@ -275,13 +287,13 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
               <span className="text-emerald-400">➜</span>
               <span className="text-sky-400">portfolio</span>
               <span className="text-neutral-400">git:(main)</span>
-              <span className="inline-block w-2 h-4 bg-emerald-400 ml-1 animate-pulse" />
+              <span className="inline-block w-2 h-4 bg-white ml-1 animate-pulse" />
             </div>
           </div>
         )}
       </div>
 
-      {/* Editor Status Bar Footer */}
+      {/* Editor Status Bar Footer (Real VS Code style) */}
       <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-900/80 border-t border-white/5 text-[11px] font-mono text-neutral-400 select-none">
         {/* Left Status Items */}
         <div className="flex items-center gap-3">
@@ -298,7 +310,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
 
         {/* Right Editor Diagnostics */}
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline">Ln 12, Col 31</span>
+          <span className="hidden sm:inline">Ln 13, Col 24</span>
           <span className="hidden sm:inline text-neutral-700">|</span>
           <span className="hidden sm:inline">Spaces: 2</span>
           <span className="hidden sm:inline text-neutral-700">|</span>
