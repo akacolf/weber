@@ -117,7 +117,23 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
   const [activeTab, setActiveTab] = useState<"code" | "terminal">("code");
   const [copied, setCopied] = useState(false);
   const [charIndex, setCharIndex] = useState(0);
+  const [networkAddress, setNetworkAddress] = useState("http://192.168.1.184:3000");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Generate a randomized local network IP on client mount
+  useEffect(() => {
+    const useClassA = Math.random() > 0.5;
+    if (useClassA) {
+      const b = Math.floor(Math.random() * 254) + 1;
+      const c = Math.floor(Math.random() * 254) + 1;
+      const d = Math.floor(Math.random() * 254) + 1;
+      setNetworkAddress(`http://10.${b}.${c}.${d}:3000`);
+    } else {
+      const b = Math.floor(Math.random() * 254) + 1;
+      const c = Math.floor(Math.random() * 254) + 1;
+      setNetworkAddress(`http://192.168.${b}.${c}:3000`);
+    }
+  }, []);
 
   // Flatten tokens into individual characters with styling and pause metadata
   const flatChars = useMemo(() => {
@@ -386,7 +402,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
               </p>
               <p>
                 - Network:{"      "}
-                <span className="text-neutral-200">http://10.39.7.229:3000</span>
+                <span className="text-neutral-200">{networkAddress}</span>
               </p>
             </div>
 
