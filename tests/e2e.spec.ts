@@ -78,4 +78,18 @@ test.describe('Header & Navigation tests', () => {
     await expect(mobileNav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: 'Contact me' })).toBeVisible();
   });
+
+  test('website loads and applies Libre Baskerville font', async ({ page }) => {
+    await page.goto('/');
+
+    // Check that html has the font variable class
+    const html = page.locator('html');
+    await expect(html).toHaveAttribute('class', /libre_baskerville/i);
+
+    // Check computed font-family on body contains Libre Baskerville
+    const bodyFont = await page.evaluate(() => {
+      return window.getComputedStyle(document.body).fontFamily;
+    });
+    expect(bodyFont.toLowerCase()).toContain('libre baskerville');
+  });
 });
