@@ -19,12 +19,16 @@ test.describe('Header & Navigation tests', () => {
     // Verify "Available for projects" badge is NOT present
     await expect(header.getByText('Available for projects')).not.toBeVisible();
 
-    // Verify all 4 desktop navigation links are present with exact expected titles
+    // Verify center desktop navigation links
     const nav = header.locator('nav[aria-label="Main Navigation"]');
     await expect(nav.getByRole('link', { name: 'About me' })).toBeVisible();
     await expect(nav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
-    await expect(nav.getByRole('link', { name: 'Contact me' })).toBeVisible();
+
+    // Verify white contact me button is present in the header
+    const contactBtn = header.getByRole('link', { name: 'Contact me' });
+    await expect(contactBtn).toBeVisible();
+    await expect(contactBtn).toHaveClass(/bg-white/);
   });
 
   test('navigation links work and navigate correctly', async ({ page }) => {
@@ -45,8 +49,8 @@ test.describe('Header & Navigation tests', () => {
     await nav.getByRole('link', { name: 'My resume/cv' }).click();
     await expect(page).toHaveURL(/\/resume$/);
 
-    // Test "Contact me"
-    await nav.getByRole('link', { name: 'Contact me' }).click();
+    // Test "Contact me" white button
+    await header.getByRole('link', { name: 'Contact me' }).click();
     await expect(page).toHaveURL(/\/contact$/);
 
     // Test clicking Logo returns to home
