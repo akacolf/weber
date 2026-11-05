@@ -14,26 +14,26 @@ const STATS_DATA: StatItem[] = [
   {
     id: "users",
     value: "3,000+",
-    label: "Active Users Scaled",
-    description: "Built & scaled across Web3, AI, and consumer web applications on TON.",
+    label: "Active users scaled",
+    description: "Built & scaled across all the applications I've built.",
   },
   {
     id: "experience",
-    value: "5+",
+    value: "3+",
     unit: "yrs",
-    label: "Engineering Craft",
+    label: "Experience",
     description: "Hands-on experience shipping full-stack products, APIs, and fluid UI systems.",
   },
   {
     id: "projects",
     value: "20+",
-    label: "Projects Completed",
-    description: "Production web applications, AI tools, and mobile products built end-to-end.",
+    label: "Projects completed",
+    description: "Production web applications, AI tools, and products built end-to-end.",
   },
   {
     id: "clients",
     value: "10+",
-    label: "Worldwide Clients",
+    label: "Worldwide clients",
     description: "Partnering with founders and teams globally to build scalable software.",
   },
 ];

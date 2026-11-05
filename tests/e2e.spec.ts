@@ -319,17 +319,17 @@ test.describe('Stats section tests', () => {
 
     // Verify 4 stat cards exist
     await expect(statsSection.getByText('3,000+')).toBeVisible();
-    await expect(statsSection.getByText('Active Users Scaled')).toBeVisible();
+    await expect(statsSection.getByText('Active users scaled')).toBeVisible();
 
-    await expect(statsSection.getByText('5+')).toBeVisible();
-    await expect(statsSection.getByText('Engineering Craft')).toBeVisible();
+    await expect(statsSection.getByText('3+')).toBeVisible();
+    await expect(statsSection.getByText('Experience')).toBeVisible();
 
-    // Verify Projects Completed replaces STON.fi grant recipient
-    await expect(statsSection.getByText('Projects Completed')).toBeVisible();
+    // Verify Projects completed replaces STON.fi grant recipient
+    await expect(statsSection.getByText('Projects completed')).toBeVisible();
     await expect(statsSection.getByText('Grant Recipient')).not.toBeVisible();
 
-    // Verify Worldwide Clients replaces 99.9% production reliability
-    await expect(statsSection.getByText('Worldwide Clients')).toBeVisible();
+    // Verify Worldwide clients replaces 99.9% production reliability
+    await expect(statsSection.getByText('Worldwide clients')).toBeVisible();
     await expect(statsSection.getByText('Production Reliability')).not.toBeVisible();
 
     // Verify badges at the bottom are removed
