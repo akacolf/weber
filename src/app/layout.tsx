@@ -3,6 +3,7 @@ import { Libre_Baskerville, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const libreBaskerville = Libre_Baskerville({
   variable: "--font-libre-baskerville",
@@ -20,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Creative Developer & Technologist — Portfolio",
   description:
-    "Personal portfolio crafted with Next.js 16, TypeScript, Tailwind CSS, and Shadcn UI.",
+    "I'm a full stack developer building complex and scalable products that revolutionize consumer experiences. I always prioritize solid architecture and agile development for a healthy progress during my projects.",
 };
 
 export default function RootLayout({
@@ -36,7 +37,10 @@ export default function RootLayout({
       <body className={`${libreBaskerville.className} min-h-full flex flex-col bg-background text-foreground`}>
         <TooltipProvider>
           <Navbar />
-          {children}
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+          <Footer />
         </TooltipProvider>
       </body>
     </html>
