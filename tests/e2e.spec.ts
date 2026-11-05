@@ -255,7 +255,7 @@ test.describe('Featured Projects Showcase tests', () => {
     // Verify section heading and description
     await expect(projectsSection.getByRole('heading', { name: 'Featured Projects' })).toBeVisible();
     await expect(
-      projectsSection.getByText('From a wide range of categories, including web apps, AI, mobile and desktop.')
+      projectsSection.getByText("Some of what I've built. From a wide range of categories, including web apps, AI, mobile, and desktop.")
     ).toBeVisible();
 
     // Verify "Selected Works" badge was deleted
@@ -300,5 +300,42 @@ test.describe('Featured Projects Showcase tests', () => {
     await expect(viewAllBtn).toBeVisible();
     await viewAllBtn.click();
     await expect(page).toHaveURL(/\/products$/);
+  });
+});
+
+test.describe('Stats section tests', () => {
+  test('renders Stats section with updated title, description, and cards without icons or badges', async ({ page }) => {
+    await page.goto('/');
+
+    const statsSection = page.locator('section#stats');
+    await expect(statsSection).toBeVisible();
+
+    // Verify section heading is "Stats"
+    await expect(statsSection.getByRole('heading', { name: 'Stats', exact: true })).toBeVisible();
+    await expect(statsSection.getByText('Key Metrics & Impact')).not.toBeVisible();
+
+    // Verify description
+    await expect(statsSection.getByText('Here are some numbers related to me.')).toBeVisible();
+
+    // Verify 4 stat cards exist
+    await expect(statsSection.getByText('3,000+')).toBeVisible();
+    await expect(statsSection.getByText('Active Users Scaled')).toBeVisible();
+
+    await expect(statsSection.getByText('5+')).toBeVisible();
+    await expect(statsSection.getByText('Engineering Craft')).toBeVisible();
+
+    // Verify Projects Completed replaces STON.fi grant recipient
+    await expect(statsSection.getByText('Projects Completed')).toBeVisible();
+    await expect(statsSection.getByText('Grant Recipient')).not.toBeVisible();
+
+    // Verify Worldwide Clients replaces 99.9% production reliability
+    await expect(statsSection.getByText('Worldwide Clients')).toBeVisible();
+    await expect(statsSection.getByText('Production Reliability')).not.toBeVisible();
+
+    // Verify badges at the bottom are removed
+    await expect(statsSection.getByText('Community')).not.toBeVisible();
+    await expect(statsSection.getByText('Track Record')).not.toBeVisible();
+    await expect(statsSection.getByText('Ecosystem Grant')).not.toBeVisible();
+    await expect(statsSection.getByText('Performance', { exact: true })).not.toBeVisible();
   });
 });

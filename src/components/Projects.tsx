@@ -65,7 +65,7 @@ export default function Projects() {
             </h2>
 
             <p className="text-muted-foreground text-sm sm:text-base max-w-xl leading-relaxed">
-              From a wide range of categories, including web apps, AI, mobile, and desktop.
+              Some of what I&apos;ve built. From a wide range of categories, including web apps, AI, mobile, and desktop.
             </p>
           </div>
 
@@ -166,37 +166,6 @@ export default function Projects() {
               </div>
             </article>
           ))}
-        </div>
-
-        {/* Section Bottom Banner */}
-        <div className="mt-12 sm:mt-16 p-6 sm:p-8 rounded-2xl border border-border/60 bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="space-y-1">
-            <h4 className="font-serif text-lg text-foreground font-normal">
-              Looking for full case studies or technical architecture?
-            </h4>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Explore the dedicated products catalogue, open-source repositories, and developer documentation.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <Link
-              href="/products"
-              className={cn(buttonVariants({ size: "sm" }), "rounded-full px-4 text-xs font-mono")}
-            >
-              Explore Archive
-              <ArrowRight className="ml-1.5 w-3.5 h-3.5" />
-            </Link>
-            <Link
-              href="/contact"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "rounded-full px-4 text-xs font-mono border-border/80"
-              )}
-            >
-              Get in touch
-            </Link>
-          </div>
         </div>
       </div>
     </section>

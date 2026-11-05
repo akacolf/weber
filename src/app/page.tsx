@@ -1,4 +1,5 @@
 import CodeTerminal from "@/components/CodeTerminal";
+import Stats from "@/components/Stats";
 import FeaturedProjects from "@/components/Projects";
 
 export default function Home() {
@@ -24,7 +25,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Projects Showcase Directly Below Hero */}
+      {/* Key Impact Stats Section */}
+      <Stats />
+
+      {/* Featured Projects Showcase */}
       <FeaturedProjects />
     </main>
   );
