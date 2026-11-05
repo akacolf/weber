@@ -215,3 +215,75 @@ test.describe('Dark and Light Mode tests', () => {
     await expect(html).toHaveClass(/dark/);
   });
 });
+
+test.describe('Featured Projects Showcase tests', () => {
+  test('renders featured projects section directly below hero with titles and metadata', async ({ page }) => {
+    await page.goto('/');
+
+    // Verify hero section is present
+    const greeting = page.getByRole('heading', { name: 'Nice to meet you.' });
+    await expect(greeting).toBeVisible();
+
+    // Verify featured projects section exists
+    const projectsSection = page.locator('section#projects');
+    await expect(projectsSection).toBeVisible();
+
+    // Verify section heading and kicker pill
+    await expect(projectsSection.getByRole('heading', { name: 'Featured Projects' })).toBeVisible();
+    await expect(projectsSection.getByText('Selected Works')).toBeVisible();
+
+    // Verify all 4 project cards are rendered
+    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Nexus Agent Runtime' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Atelier UI Primitive Suite' })).toBeVisible();
+
+    // Verify action links have accessible labels
+    const chromaGithub = projectsSection.locator('a[aria-label="Source code for Liquid Chroma Engine"]');
+    await expect(chromaGithub).toBeVisible();
+    await expect(chromaGithub).toHaveAttribute('href', 'https://github.com/akacolf');
+
+    const chromaDemo = projectsSection.locator('a[aria-label="Live demo for Liquid Chroma Engine"]');
+    await expect(chromaDemo).toBeVisible();
+  });
+
+  test('category filter updates the visible project list', async ({ page }) => {
+    await page.goto('/');
+
+    const projectsSection = page.locator('section#projects');
+    await expect(projectsSection).toBeVisible();
+
+    // Click "Graphics" filter
+    const graphicsFilterBtn = projectsSection.getByRole('button', { name: 'Graphics' });
+    await graphicsFilterBtn.click();
+
+    // Verify Prism Spatial Canvas is visible and others are filtered out
+    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).not.toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Nexus Agent Runtime' })).not.toBeVisible();
+
+    // Click "Systems & AI" filter
+    const systemsFilterBtn = projectsSection.getByRole('button', { name: 'Systems & AI' });
+    await systemsFilterBtn.click();
+
+    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Nexus Agent Runtime' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).not.toBeVisible();
+
+    // Reset back to "All"
+    const allFilterBtn = projectsSection.getByRole('button', { name: /All/i });
+    await allFilterBtn.click();
+    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).toBeVisible();
+    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).toBeVisible();
+  });
+
+  test('featured projects link to products archive', async ({ page }) => {
+    await page.goto('/');
+
+    const projectsSection = page.locator('section#projects');
+    const viewAllBtn = projectsSection.getByRole('link', { name: 'View all products' });
+    await expect(viewAllBtn).toBeVisible();
+    await viewAllBtn.click();
+    await expect(page).toHaveURL(/\/products$/);
+  });
+});
