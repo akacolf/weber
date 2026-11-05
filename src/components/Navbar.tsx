@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export const NAV_LINKS = [
   { label: "About me", href: "/about" },
@@ -60,6 +61,8 @@ export default function Navbar() {
 
         {/* Actions / Contact CTA (Right) */}
         <div className="flex items-center flex-1 justify-end gap-3">
+          <ModeToggle />
+
           <Link
             href="/contact"
             className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all duration-150 select-none shadow-sm"
