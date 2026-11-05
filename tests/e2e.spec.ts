@@ -184,3 +184,34 @@ test.describe('Footer tests', () => {
     }).toBeLessThan(100);
   });
 });
+
+test.describe('Dark and Light Mode tests', () => {
+  test('renders theme mode toggle and switches between light and dark themes', async ({ page }) => {
+    await page.goto('/');
+
+    const toggleBtn = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(toggleBtn).toBeVisible();
+
+    // Click toggle to open theme options dropdown
+    await toggleBtn.click();
+
+    // Verify menu items are visible
+    const lightOption = page.getByRole('menuitem', { name: 'Light' });
+    const darkOption = page.getByRole('menuitem', { name: 'Dark' });
+    const systemOption = page.getByRole('menuitem', { name: 'System' });
+
+    await expect(lightOption).toBeVisible();
+    await expect(darkOption).toBeVisible();
+    await expect(systemOption).toBeVisible();
+
+    // Switch to Light mode
+    await lightOption.click();
+    const html = page.locator('html');
+    await expect(html).toHaveClass(/light/);
+
+    // Switch to Dark mode
+    await toggleBtn.click();
+    await darkOption.click();
+    await expect(html).toHaveClass(/dark/);
+  });
+});
