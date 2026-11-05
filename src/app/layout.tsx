@@ -20,9 +20,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Creative Developer & Technologist — Portfolio",
+  title: {
+    default: "<Home>",
+    template: "%s",
+  },
   description:
     "I'm a full stack developer building complex and scalable products that revolutionize consumer experiences. I always prioritize solid architecture and agile development for a healthy progress during my projects.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

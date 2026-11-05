@@ -215,3 +215,127 @@ test.describe('Dark and Light Mode tests', () => {
     await expect(html).toHaveClass(/dark/);
   });
 });
+
+test.describe('Favicon & Document Title tests', () => {
+  test('homepage has <Home> title and custom favicon icon', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle('<Home>');
+
+    const iconLink = page.locator('link[rel="icon"]');
+    await expect(iconLink).toHaveAttribute('href', /\/icon\.svg/);
+  });
+
+  test('subpages have route-matching titles with angle brackets', async ({ page }) => {
+    await page.goto('/about');
+    await expect(page).toHaveTitle('<About me>');
+
+    await page.goto('/products');
+    await expect(page).toHaveTitle("<Products I've built>");
+
+    await page.goto('/resume');
+    await expect(page).toHaveTitle('<My resume/cv>');
+
+    await page.goto('/contact');
+    await expect(page).toHaveTitle('<Contact me>');
+  });
+});
+
+test.describe('Featured Projects Showcase tests', () => {
+  test('renders featured projects section directly below hero with Quantum Club card', async ({ page }) => {
+    await page.goto('/');
+
+    // Verify hero section is present
+    const greeting = page.getByRole('heading', { name: 'Nice to meet you.' });
+    await expect(greeting).toBeVisible();
+
+    // Verify featured projects section exists
+    const projectsSection = page.locator('section#projects');
+    await expect(projectsSection).toBeVisible();
+
+    // Verify section heading and description
+    await expect(projectsSection.getByRole('heading', { name: 'Featured Projects' })).toBeVisible();
+    await expect(
+      projectsSection.getByText("Some of what I've built. From a wide range of categories, including web apps, AI, mobile, and desktop.")
+    ).toBeVisible();
+
+    // Verify "Selected Works" badge was deleted
+    await expect(projectsSection.getByText('Selected Works')).not.toBeVisible();
+
+    // Verify Quantum Club project card is rendered
+    await expect(projectsSection.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
+    await expect(
+      projectsSection.getByText(
+        'Web3 super app that combined DeFi, social, and AI on TON. Scaled to 3000 users and counting and received a grant from STON.fi.'
+      )
+    ).toBeVisible();
+
+    // Verify badges (Blockchain • AI and Web app)
+    await expect(projectsSection.getByText('Blockchain • AI')).toBeVisible();
+    await expect(projectsSection.getByText('Web app', { exact: true })).toBeVisible();
+
+    // Verify project banner image is displayed
+    await expect(projectsSection.getByAltText(/quantum club banner/i)).toBeVisible();
+
+    // Verify spec callout badge (highlight) was deleted
+    await expect(projectsSection.getByText(/contrast audit/i)).not.toBeVisible();
+    await expect(projectsSection.getByText(/WCAG AAA/i)).not.toBeVisible();
+
+    // Verify tech stack tags
+    await expect(projectsSection.getByText('TypeScript')).toBeVisible();
+    await expect(projectsSection.getByText('JavaScript')).toBeVisible();
+    await expect(projectsSection.getByText('Next.js')).toBeVisible();
+    await expect(projectsSection.getByText('Tailwind CSS')).toBeVisible();
+
+    // Verify only ONE external action button exists for the project
+    const actionButtons = projectsSection.locator('article a[target="_blank"]');
+    await expect(actionButtons).toHaveCount(1);
+    await expect(actionButtons).toHaveAttribute('href', 'https://github.com/akacolf/quantum-club-webapp');
+  });
+
+  test('featured projects link to products archive', async ({ page }) => {
+    await page.goto('/');
+
+    const projectsSection = page.locator('section#projects');
+    const viewAllBtn = projectsSection.getByRole('link', { name: 'View all products' });
+    await expect(viewAllBtn).toBeVisible();
+    await viewAllBtn.click();
+    await expect(page).toHaveURL(/\/products$/);
+  });
+});
+
+test.describe('Stats section tests', () => {
+  test('renders Stats section with updated title, description, and cards without icons or badges', async ({ page }) => {
+    await page.goto('/');
+
+    const statsSection = page.locator('section#stats');
+    await expect(statsSection).toBeVisible();
+
+    // Verify section heading is "Stats"
+    await expect(statsSection.getByRole('heading', { name: 'Stats', exact: true })).toBeVisible();
+    await expect(statsSection.getByText('Key Metrics & Impact')).not.toBeVisible();
+
+    // Verify description
+    await expect(statsSection.getByText('Here are some numbers related to me.')).toBeVisible();
+
+    // Verify 4 stat cards exist
+    await expect(statsSection.getByText('3,000+')).toBeVisible();
+    await expect(statsSection.getByText('Active users scaled')).toBeVisible();
+
+    await expect(statsSection.getByText('3+')).toBeVisible();
+    await expect(statsSection.getByText('Experience')).toBeVisible();
+
+    // Verify Projects completed replaces STON.fi grant recipient
+    await expect(statsSection.getByText('Projects completed')).toBeVisible();
+    await expect(statsSection.getByText('Grant Recipient')).not.toBeVisible();
+
+    // Verify Worldwide clients replaces 99.9% production reliability
+    await expect(statsSection.getByText('Worldwide clients')).toBeVisible();
+    await expect(statsSection.getByText('Production Reliability')).not.toBeVisible();
+
+    // Verify badges at the bottom are removed
+    await expect(statsSection.getByText('Community')).not.toBeVisible();
+    await expect(statsSection.getByText('Track Record')).not.toBeVisible();
+    await expect(statsSection.getByText('Ecosystem Grant')).not.toBeVisible();
+    await expect(statsSection.getByText('Performance', { exact: true })).not.toBeVisible();
+  });
+});
