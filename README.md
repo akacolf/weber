@@ -1,16 +1,15 @@
 # Portfolio Website
 
-A personal portfolio built with Next.js, React Three Fiber, Liquid Shaders, and Shadcn UI.
+A personal portfolio built with Next.js, Tailwind CSS, and Shadcn UI.
 
 ## Tech Stack & Features
 
 - **Next.js 16 (App Router)** with TypeScript & Turbopack
-- **React Three Fiber & Drei (`@react-three/fiber`, `@react-three/drei`)**: Real-time 3D floating molten sphere in the hero section
-- **Liquid Logo**: Molten chrome monogram reacting to cursor movement with glare and specular sweep
-- **Liquid Glass (`liquid-glass-js`)**: Optical refraction cards with depth, chromatic dispersion, and normal highlights
-- **Shader Gradient**: GPU-accelerated fluid background shader
-- **Shadcn UI (`@base-ui/react`, Tailwind CSS v4)**: Badges, cards, tabs, buttons, tooltips, dialogs
-- **Playwright E2E Testing**: Pre-configured browser test suite supporting Safari (WebKit) and Chrome (Chromium)
+- **Tailwind CSS v4**: Modern utility-first CSS styling
+- **Typography**: Libre Baskerville serif font loaded via `next/font/google`
+- **Shadcn UI (`@base-ui/react`)**: Accessible, unstyled primitives and design system components (buttons, dialogs, sheets, tooltips, cards)
+- **Lucide Icons (`lucide-react`)**: Clean, minimalist UI icons
+- **Playwright E2E Testing**: Browser test suite supporting Safari (WebKit) and Chrome (Chromium) across desktop and mobile viewports
 
 ---
 
@@ -41,8 +40,8 @@ npx playwright test --project=webkit
 
 ## Installed Agent Skills
 
-The project is configured with the requested Antigravity agent skills in `.agents/skills/`:
+The project is configured with Antigravity agent skills in `.agents/skills/`:
 
-1. **Taste Skill** (`design-taste-frontend`): Anti-slop frontend standards, editorial composition, and browser verification.
-2. **Web Design Guidelines** (`web-design-guidelines`): Web interface guidelines, typography, contrast, and accessibility reviews.
-3. **Awesome Design Bundle** (`bergside/awesome-design-skills`): 60+ design system archetypes (glassmorphism, bento, brutalism, modern, sleek, mono, etc.).
+1. **Shadcn UI** (`shadcn`): Component patterns and implementation conventions for Shadcn UI.
+2. **Taste Skill** (`design-taste-frontend`): Anti-slop frontend standards, editorial composition, and browser verification.
+3. **Web Design Guidelines** (`web-design-guidelines`): Web interface guidelines, typography, contrast, and accessibility reviews.
