@@ -105,13 +105,13 @@ test.describe('Footer tests', () => {
     const footerLogo = footer.locator('a[aria-label*="Khalid Al Shareef"]');
     await expect(footerLogo).toBeVisible();
 
-    // Verify bio / tagline text
+    // Verify bio / description text
     await expect(
-      footer.getByText('Creative Developer & Technologist crafting performant digital experiences')
+      footer.getByText("I'm a full stack developer building complex and scalable products")
     ).toBeVisible();
 
-    // Verify availability badge
-    await expect(footer.getByText('Available for selected projects')).toBeVisible();
+    // Verify availability badge is not present
+    await expect(footer.getByText('Available for selected projects')).not.toBeVisible();
 
     // Verify footer navigation links
     const footerNav = footer.locator('nav[aria-label="Footer Navigation"]');
@@ -121,15 +121,26 @@ test.describe('Footer tests', () => {
     await expect(footerNav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
     await expect(footerNav.getByRole('link', { name: 'Contact me' })).toBeVisible();
 
-    // Verify connect links
-    await expect(footer.getByRole('link', { name: /GitHub/i })).toBeVisible();
-    await expect(footer.getByRole('link', { name: /X \/ Twitter/i })).toBeVisible();
-    await expect(footer.getByRole('link', { name: /LinkedIn/i })).toBeVisible();
-    await expect(footer.getByRole('link', { name: /Email/i })).toBeVisible();
+    // Verify connect links and their href attributes
+    const githubLink = footer.getByRole('link', { name: /GitHub/i });
+    await expect(githubLink).toBeVisible();
+    await expect(githubLink).toHaveAttribute('href', 'https://github.com/akacolf');
 
-    // Verify copyright and tech colophon
+    const xLink = footer.getByRole('link', { name: /X \/ Twitter/i });
+    await expect(xLink).toBeVisible();
+    await expect(xLink).toHaveAttribute('href', 'https://x.com/akacolf');
+
+    const linkedinLink = footer.getByRole('link', { name: /LinkedIn/i });
+    await expect(linkedinLink).toBeVisible();
+    await expect(linkedinLink).toHaveAttribute('href', 'https://linkedin.com/in/colf');
+
+    const emailLink = footer.getByRole('link', { name: /Email/i });
+    await expect(emailLink).toBeVisible();
+    await expect(emailLink).toHaveAttribute('href', 'mailto:khalidthenoble@gmail.com');
+
+    // Verify copyright and verify tech colophon is not present
     await expect(footer.getByText(/© \d{4} Khalid Al Shareef/i)).toBeVisible();
-    await expect(footer.getByText(/Crafted with Next.js & Libre Baskerville/i)).toBeVisible();
+    await expect(footer.getByText(/Crafted with Next.js/i)).not.toBeVisible();
 
     // Verify back to top button
     const backToTopBtn = footer.locator('button[aria-label="Back to top"]');

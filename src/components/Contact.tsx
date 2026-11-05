@@ -7,7 +7,7 @@ import { Copy, Check, Mail, MessageSquare, ArrowUpRight } from "lucide-react";
 
 export default function Contact() {
   const [copied, setCopied] = useState(false);
-  const email = "hello@portfolio.design";
+  const email = "khalidthenoble@gmail.com";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(email);
@@ -68,7 +68,7 @@ export default function Contact() {
           {/* Social Links */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground border-t border-white/5 pt-8">
             <a
-              href="https://github.com"
+              href="https://github.com/akacolf"
               target="_blank"
               rel="noreferrer"
               className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
@@ -76,7 +76,7 @@ export default function Contact() {
               GitHub <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
             <a
-              href="https://twitter.com"
+              href="https://x.com/akacolf"
               target="_blank"
               rel="noreferrer"
               className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
@@ -84,7 +84,7 @@ export default function Contact() {
               X / Twitter <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://linkedin.com/in/colf"
               target="_blank"
               rel="noreferrer"
               className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
