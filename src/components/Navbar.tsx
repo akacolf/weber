@@ -2,11 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
-import LiquidLogo from "@/components/ui/LiquidLogo";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -14,13 +13,17 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 group">
-          <LiquidLogo size={38} />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-950 border border-white/10 flex items-center justify-center shadow-md group-hover:border-sky-500/40 group-hover:shadow-sky-500/10 transition-all">
+            <span className="font-mono font-bold text-sm bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent">
+              C
+            </span>
+          </div>
           <div className="flex flex-col">
             <span className="font-semibold text-sm tracking-tight group-hover:text-primary transition-colors">
               Portfolio
             </span>
             <span className="text-[11px] text-muted-foreground font-mono">
-              v2.0 • WebGL
+              v2.0 • Systems &amp; UI
             </span>
           </div>
         </Link>

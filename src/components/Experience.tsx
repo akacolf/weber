@@ -3,8 +3,8 @@
 import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Briefcase, Boxes, Cpu, ArrowUpRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Briefcase, Boxes, Cpu } from "lucide-react";
 
 const ROLES = [
   {
@@ -12,48 +12,48 @@ const ROLES = [
     company: "Vesper Systems",
     period: "2024 — Present",
     description:
-      "Spearheading high-performance WebGL interfaces, real-time telemetry dashboards, and component libraries. Cut render latencies by 45% using instanced Three.js geometry and modern React 19.",
-    skills: ["React 19", "Three.js", "Web Audio", "Turbopack", "Playwright"],
+      "Spearheading high-performance Next.js 16 architectures, real-time telemetry dashboards, and accessible Shadcn design systems. Cut P99 render latencies by 45% using Partial Prerendering and optimized bundle trees.",
+    skills: ["React 19", "Next.js 16", "TypeScript", "Turbopack", "Playwright"],
   },
   {
-    role: "Senior Creative Technologist",
+    role: "Senior UI & Systems Engineer",
     company: "Fluid Studio",
     period: "2022 — 2024",
     description:
-      "Designed immersive brand worlds, liquid glass interactions, and procedural shaders for world-class product launches. Led engineering handoffs and accessibility compliance.",
-    skills: ["R3F", "GLSL Shaders", "Tailwind CSS", "Design Tokens"],
+      "Architected enterprise design systems, glassmorphism UI components, and micro-interactions for flagship product launches. Standardized design tokens and WCAG 2.2 AA accessibility compliance.",
+    skills: ["Design Systems", "Tailwind CSS", "Shadcn UI", "Design Tokens"],
   },
   {
     role: "Full-Stack Engineer",
     company: "Synthetix Labs",
     period: "2020 — 2022",
     description:
-      "Engineered full-stack TypeScript microservices, GraphQL APIs, and performant web apps serving 200k+ monthly active users.",
+      "Engineered full-stack TypeScript microservices, REST & GraphQL APIs, and performant web apps serving 200k+ monthly active users.",
     skills: ["TypeScript", "Next.js", "Node.js", "PostgreSQL", "Docker"],
   },
 ];
 
 const SKILL_CATEGORIES = [
   {
-    title: "Graphics & 3D Web",
+    title: "Design Systems & UI",
     items: [
-      "Three.js",
-      "React Three Fiber (R3F)",
-      "GLSL Custom Shaders",
-      "Liquid-glass-js",
-      "Shadergradient",
-      "Post-Processing & Bloom",
+      "Shadcn UI / Radix",
+      "Tailwind CSS v4",
+      "Design Tokens & Theming",
+      "CSS Glassmorphism",
+      "Micro-Interactions",
+      "Fluid Layout Systems",
     ],
   },
   {
     title: "Frontend Engineering",
     items: [
       "Next.js 16 (App Router)",
-      "React 19",
-      "TypeScript",
-      "Tailwind CSS v4",
-      "Shadcn / Base UI",
-      "Micro-Interactions & Gestures",
+      "React 19 & Server Actions",
+      "TypeScript 5 Strict",
+      "Partial Prerendering (PPR)",
+      "State Management",
+      "Performance Optimization",
     ],
   },
   {
@@ -62,9 +62,9 @@ const SKILL_CATEGORIES = [
       "Playwright E2E Testing",
       "WCAG 2.2 AA Accessibility",
       "CI/CD Workflows",
-      "Performance Profiling (60 FPS)",
+      "Core Web Vitals (100/100)",
       "Antigravity Custom Skills",
-      "Design Systems & Governance",
+      "API Architecture",
     ],
   },
 ];
@@ -98,35 +98,38 @@ export default function Experience() {
           {/* Roles Tab */}
           <TabsContent value="experience" className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              {ROLES.map((role, idx) => (
+              {ROLES.map((job, idx) => (
                 <Card
                   key={idx}
-                  className="bg-neutral-900/40 backdrop-blur-lg border-white/10 hover:border-white/20 transition-all p-6"
+                  className="p-6 sm:p-8 rounded-2xl bg-neutral-900/30 backdrop-blur-md border-white/10 hover:border-white/20 transition-all shadow-sm"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 className="text-lg font-bold text-foreground">
-                        {role.role}
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground">
+                        {job.role}
                       </h3>
-                      <p className="text-sm text-sky-400 font-medium">
-                        {role.company}
+                      <p className="text-sm font-medium text-sky-400">
+                        {job.company}
                       </p>
                     </div>
-                    <Badge variant="outline" className="w-fit font-mono text-xs text-muted-foreground">
-                      {role.period}
+                    <Badge
+                      variant="outline"
+                      className="w-fit font-mono text-xs text-muted-foreground border-white/10"
+                    >
+                      {job.period}
                     </Badge>
                   </div>
 
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                    {role.description}
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                    {job.description}
                   </p>
 
-                  <div className="flex flex-wrap gap-1.5">
-                    {role.skills.map((s) => (
+                  <div className="flex flex-wrap gap-2">
+                    {job.skills.map((s) => (
                       <Badge
                         key={s}
                         variant="secondary"
-                        className="text-[11px] bg-white/5 border border-white/10 font-mono"
+                        className="text-xs bg-white/5 border border-white/5 text-muted-foreground hover:text-foreground"
                       >
                         {s}
                       </Badge>
@@ -138,24 +141,25 @@ export default function Experience() {
           </TabsContent>
 
           {/* Skills Tab */}
-          <TabsContent value="skills">
-            <div id="skills" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TabsContent value="skills" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {SKILL_CATEGORIES.map((cat, idx) => (
                 <Card
                   key={idx}
-                  className="bg-neutral-900/40 backdrop-blur-lg border-white/10 p-6 flex flex-col justify-between"
+                  className="p-6 rounded-2xl bg-neutral-900/30 backdrop-blur-md border-white/10 hover:border-white/20 transition-all flex flex-col justify-between"
                 >
                   <div>
-                    <h3 className="text-base font-bold text-foreground mb-4 pb-2 border-b border-white/10 flex items-center justify-between">
-                      {cat.title}
+                    <div className="flex items-center gap-2 mb-4">
                       <Boxes className="w-4 h-4 text-violet-400" />
-                    </h3>
-
+                      <h3 className="font-bold text-base text-foreground">
+                        {cat.title}
+                      </h3>
+                    </div>
                     <ul className="space-y-2.5">
                       {cat.items.map((item) => (
                         <li
                           key={item}
-                          className="text-sm text-muted-foreground flex items-center gap-2"
+                          className="flex items-center gap-2 text-sm text-muted-foreground"
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
                           <span>{item}</span>
@@ -165,9 +169,9 @@ export default function Experience() {
                   </div>
 
                   <div className="pt-6 mt-6 border-t border-white/5">
-                    <p className="text-[11px] font-mono text-muted-foreground">
-                      Verified with Playwright &amp; WebGL Benchmarks
-                    </p>
+                    <span className="font-mono text-[11px] text-muted-foreground/60">
+                      Production Ready
+                    </span>
                   </div>
                 </Card>
               ))}

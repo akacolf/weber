@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Creative Developer & Technologist — Portfolio",
   description:
-    "Personal portfolio crafted with React Three Fiber, Liquid Glass, Shader Gradients, and Shadcn UI.",
+    "Personal portfolio crafted with Next.js 16, TypeScript, Tailwind CSS, and Shadcn UI.",
 };
 
 export default function RootLayout({

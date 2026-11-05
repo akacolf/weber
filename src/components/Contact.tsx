@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import LiquidGlassCard from "@/components/ui/LiquidGlassCard";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Copy, Check, Mail, MessageSquare, ArrowUpRight } from "lucide-react";
 
 export default function Contact() {
