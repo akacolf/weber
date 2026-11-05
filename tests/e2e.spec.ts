@@ -216,8 +216,32 @@ test.describe('Dark and Light Mode tests', () => {
   });
 });
 
+test.describe('Favicon & Document Title tests', () => {
+  test('homepage has <Home> title and custom favicon icon', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle('<Home>');
+
+    const iconLink = page.locator('link[rel="icon"]');
+    await expect(iconLink).toHaveAttribute('href', /\/icon\.svg/);
+  });
+
+  test('subpages have route-matching titles with angle brackets', async ({ page }) => {
+    await page.goto('/about');
+    await expect(page).toHaveTitle('<About me>');
+
+    await page.goto('/products');
+    await expect(page).toHaveTitle("<Products I've built>");
+
+    await page.goto('/resume');
+    await expect(page).toHaveTitle('<My resume/cv>');
+
+    await page.goto('/contact');
+    await expect(page).toHaveTitle('<Contact me>');
+  });
+});
+
 test.describe('Featured Projects Showcase tests', () => {
-  test('renders featured projects section directly below hero with titles and metadata', async ({ page }) => {
+  test('renders featured projects section directly below hero with Quantum Club card', async ({ page }) => {
     await page.goto('/');
 
     // Verify hero section is present
@@ -228,53 +252,40 @@ test.describe('Featured Projects Showcase tests', () => {
     const projectsSection = page.locator('section#projects');
     await expect(projectsSection).toBeVisible();
 
-    // Verify section heading and kicker pill
+    // Verify section heading and description
     await expect(projectsSection.getByRole('heading', { name: 'Featured Projects' })).toBeVisible();
-    await expect(projectsSection.getByText('Selected Works')).toBeVisible();
+    await expect(
+      projectsSection.getByText('From a wide range of categories, including web apps, AI, mobile and desktop.')
+    ).toBeVisible();
 
-    // Verify all 4 project cards are rendered
-    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Nexus Agent Runtime' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Atelier UI Primitive Suite' })).toBeVisible();
+    // Verify "Selected Works" badge was deleted
+    await expect(projectsSection.getByText('Selected Works')).not.toBeVisible();
 
-    // Verify action links have accessible labels
-    const chromaGithub = projectsSection.locator('a[aria-label="Source code for Liquid Chroma Engine"]');
-    await expect(chromaGithub).toBeVisible();
-    await expect(chromaGithub).toHaveAttribute('href', 'https://github.com/akacolf');
+    // Verify Quantum Club project card is rendered
+    await expect(projectsSection.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
+    await expect(
+      projectsSection.getByText(
+        'Web3 super app that combined DeFi, social, and AI. Scaled to 3000 users and counting and received a grant from STON.fi.'
+      )
+    ).toBeVisible();
 
-    const chromaDemo = projectsSection.locator('a[aria-label="Live demo for Liquid Chroma Engine"]');
-    await expect(chromaDemo).toBeVisible();
-  });
+    // Verify domain badge
+    await expect(projectsSection.getByText('Blockchain • AI')).toBeVisible();
 
-  test('category filter updates the visible project list', async ({ page }) => {
-    await page.goto('/');
+    // Verify spec callout badge (highlight) was deleted
+    await expect(projectsSection.getByText(/contrast audit/i)).not.toBeVisible();
+    await expect(projectsSection.getByText(/WCAG AAA/i)).not.toBeVisible();
 
-    const projectsSection = page.locator('section#projects');
-    await expect(projectsSection).toBeVisible();
+    // Verify tech stack tags
+    await expect(projectsSection.getByText('TypeScript')).toBeVisible();
+    await expect(projectsSection.getByText('JavaScript')).toBeVisible();
+    await expect(projectsSection.getByText('Next.js')).toBeVisible();
+    await expect(projectsSection.getByText('Tailwind CSS')).toBeVisible();
 
-    // Click "Graphics" filter
-    const graphicsFilterBtn = projectsSection.getByRole('button', { name: 'Graphics' });
-    await graphicsFilterBtn.click();
-
-    // Verify Prism Spatial Canvas is visible and others are filtered out
-    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).not.toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Nexus Agent Runtime' })).not.toBeVisible();
-
-    // Click "Systems & AI" filter
-    const systemsFilterBtn = projectsSection.getByRole('button', { name: 'Systems & AI' });
-    await systemsFilterBtn.click();
-
-    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Nexus Agent Runtime' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).not.toBeVisible();
-
-    // Reset back to "All"
-    const allFilterBtn = projectsSection.getByRole('button', { name: /All/i });
-    await allFilterBtn.click();
-    await expect(projectsSection.getByRole('heading', { name: 'Prism Spatial Canvas' })).toBeVisible();
-    await expect(projectsSection.getByRole('heading', { name: 'Liquid Chroma Engine' })).toBeVisible();
+    // Verify only ONE external action button exists for the project
+    const actionButtons = projectsSection.locator('article a[target="_blank"]');
+    await expect(actionButtons).toHaveCount(1);
+    await expect(actionButtons).toHaveAttribute('href', 'https://github.com/akacolf/quantum-club-app');
   });
 
   test('featured projects link to products archive', async ({ page }) => {
