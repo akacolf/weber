@@ -7,6 +7,7 @@ This file collects ideas, features, and backlog items as they come up during the
 ## In Progress
 
 - [ ] **Landing Page Craft & Visual Identity**: Design and implement an expressive, high-impact landing page that balances editorial serif elegance (`Libre Baskerville`), tactile interactive components, and technical depth.
+  - [x] **Featured Projects Showcase**: Implemented clean showcase directly below hero with live telemetry previews, category filtering, accessible metadata, and dark/light mode support.
 
 ---
 
