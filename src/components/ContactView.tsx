@@ -15,19 +15,88 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Calendar,
   Clock,
-  Video,
   Globe,
   Mail,
   Copy,
   Check,
   Send,
   ArrowUpRight,
-  Sparkles,
-  MessageSquare,
   CheckCircle2,
   RefreshCw,
 } from "lucide-react";
 import { cn } from "cn";
+
+function GoogleCalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      className={className}
+      aria-hidden="true"
+    >
+      <path fill="#fff" d="M195.368 60.632H60.632v134.736h134.736z" />
+      <path
+        fill="#ea4335"
+        d="M195.368 256L256 195.368l-30.316-5.172l-30.316 5.172l-5.533 27.73z"
+      />
+      <path
+        fill="#188038"
+        d="M0 195.368v40.421C0 246.956 9.044 256 20.21 256h40.422l6.225-30.316l-6.225-30.316l-33.033-5.172z"
+      />
+      <path
+        fill="#1967d2"
+        d="M256 60.632V20.21C256 9.044 246.956 0 235.79 0h-40.422q-5.532 22.554-5.533 33.196q0 10.641 5.533 27.436q20.115 5.76 30.316 5.76T256 60.631"
+      />
+      <path fill="#fbbc04" d="M256 60.632h-60.632v134.736H256z" />
+      <path fill="#34a853" d="M195.368 195.368H60.632V256h134.736z" />
+      <path
+        fill="#4285f4"
+        d="M195.368 0H20.211C9.044 0 0 9.044 0 20.21v175.158h60.632V60.632h134.736z"
+      />
+      <path
+        fill="#4285f4"
+        d="M88.27 165.154c-5.036-3.402-8.523-8.37-10.426-14.94l11.689-4.816q1.59 6.063 5.558 9.398c2.627 2.223 5.827 3.318 9.566 3.318q5.734 0 9.852-3.487c2.746-2.324 4.127-5.288 4.127-8.875q0-5.508-4.345-8.994c-2.897-2.324-6.535-3.486-10.88-3.486h-6.754v-11.57h6.063q5.608 0 9.448-3.033c2.56-2.02 3.84-4.783 3.84-8.303c0-3.132-1.145-5.625-3.435-7.494c-2.29-1.87-5.188-2.813-8.708-2.813c-3.436 0-6.164.91-8.185 2.745a16.1 16.1 0 0 0-4.413 6.754l-11.57-4.817c1.532-4.345 4.345-8.185 8.471-11.503s9.398-4.985 15.798-4.985c4.733 0 8.994.91 12.767 2.745c3.772 1.836 6.736 4.379 8.875 7.613c2.14 3.25 3.2 6.888 3.2 10.93c0 4.126-.993 7.613-2.98 10.476s-4.43 5.052-7.327 6.585v.69a22.25 22.25 0 0 1 9.398 7.327c2.442 3.284 3.672 7.208 3.672 11.79c0 4.58-1.163 8.673-3.487 12.26c-2.324 3.588-5.54 6.417-9.617 8.472c-4.092 2.055-8.69 3.1-13.793 3.1c-5.912.016-11.369-1.685-16.405-5.087m71.797-58.005l-12.833 9.28l-6.417-9.734l23.023-16.607h8.825v78.333h-12.598z"
+      />
+    </svg>
+  );
+}
+
+function GoogleMeetIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 211"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        fill="#00832d"
+        d="m144.822 105.322l24.957 28.527l33.562 21.445l5.838-49.792l-5.838-48.669l-34.205 18.839z"
+      />
+      <path
+        fill="#0066da"
+        d="M0 150.66v42.43c0 9.688 7.864 17.554 17.554 17.554h42.43l8.786-32.059l-8.786-27.925l-29.11-8.786z"
+      />
+      <path
+        fill="#e94235"
+        d="M59.984 0L0 59.984l30.876 8.765l29.108-8.765l8.626-27.545z"
+      />
+      <path fill="#2684fc" d="M.001 150.679h59.983V59.983H.001z" />
+      <path
+        fill="#00ac47"
+        d="M241.659 25.398L203.34 56.834v98.46l38.477 31.558c5.76 4.512 14.186.4 14.186-6.922V32.18c0-7.403-8.627-11.495-14.345-6.781"
+      />
+      <path
+        fill="#00ac47"
+        d="M144.822 105.322v45.338H59.984v59.984h125.804c9.69 0 17.553-7.866 17.553-17.554v-37.796z"
+      />
+      <path
+        fill="#ffba00"
+        d="M185.788 0H59.984v59.984h84.838v45.338l58.52-48.49V17.555c0-9.69-7.864-17.554-17.554-17.554"
+      />
+    </svg>
+  );
+}
 
 export default function ContactView() {
   const [formData, setFormData] = useState({
@@ -82,10 +151,6 @@ export default function ContactView() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Editorial Header */}
       <div className="max-w-3xl mb-12 sm:mb-16">
-        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground mb-4 px-3 py-1 rounded-full bg-secondary/50 border border-border">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Available for new projects</span>
-        </div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-normal font-serif tracking-tight text-foreground mb-4">
           Let&apos;s build together.
         </h1>
@@ -97,15 +162,11 @@ export default function ContactView() {
       </div>
 
       {/* Main Grid: Form (Left) & Calendar / Channels (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
         {/* Left Column: Shadcn Contact Form (7 cols) */}
-        <div className="lg:col-span-7">
-          <Card className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm">
+        <div className="lg:col-span-7 flex flex-col">
+          <Card className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm h-full flex flex-col justify-between">
             <CardHeader className="pb-4">
-              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground mb-1">
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>DIRECT INQUIRY</span>
-              </div>
               <CardTitle className="text-2xl font-serif font-normal">
                 Send a message
               </CardTitle>
@@ -115,11 +176,11 @@ export default function ContactView() {
               </CardDescription>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col justify-between">
               {isSubmitted ? (
                 <div
                   data-testid="contact-success-state"
-                  className="py-10 px-4 text-center flex flex-col items-center justify-center space-y-4"
+                  className="py-10 px-4 text-center flex-1 flex flex-col items-center justify-center space-y-4"
                 >
                   <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
                     <CheckCircle2 className="w-6 h-6" />
@@ -153,68 +214,70 @@ export default function ContactView() {
                 <form
                   onSubmit={handleSubmit}
                   data-testid="contact-form"
-                  className="space-y-5"
+                  className="space-y-5 flex-1 flex flex-col justify-between"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">
+                          Your Name <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          type="text"
+                          placeholder="Alex Morgan"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                          className="h-10"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">
+                          Email Address <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="alex@company.com"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                          className="h-10"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="name">
-                        Your Name <span className="text-destructive">*</span>
-                      </Label>
+                      <Label htmlFor="subject">Subject / Project Category</Label>
                       <Input
-                        id="name"
-                        name="name"
+                        id="subject"
+                        name="subject"
                         type="text"
-                        placeholder="Alex Morgan"
-                        value={formData.name}
+                        placeholder="e.g. Web3 Architecture, 3D Web Application, Full-Stack Contract"
+                        value={formData.subject}
                         onChange={handleChange}
-                        required
                         className="h-10"
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="email">
-                        Email Address <span className="text-destructive">*</span>
+                      <Label htmlFor="message">
+                        Message <span className="text-destructive">*</span>
                       </Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="alex@company.com"
-                        value={formData.email}
+                      <Textarea
+                        id="message"
+                        name="message"
+                        rows={6}
+                        placeholder="Tell me about what you're building, target timeline, key challenges, or how we might collaborate..."
+                        value={formData.message}
                         onChange={handleChange}
                         required
-                        className="h-10"
+                        className="min-h-[140px] resize-y"
                       />
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject / Project Category</Label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      type="text"
-                      placeholder="e.g. Web3 Architecture, 3D Web Application, Full-Stack Contract"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      className="h-10"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="message">
-                      Message <span className="text-destructive">*</span>
-                    </Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      rows={6}
-                      placeholder="Tell me about what you're building, target timeline, key challenges, or how we might collaborate..."
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      className="min-h-[140px] resize-y"
-                    />
                   </div>
 
                   <div className="pt-2 flex items-center justify-between">
@@ -246,19 +309,18 @@ export default function ContactView() {
         </div>
 
         {/* Right Column: Google Calendar Booking Section & Channels (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="lg:col-span-5 flex flex-col gap-6">
           {/* Calendar Booking Card */}
           <Card
             data-testid="calendar-booking-section"
-            className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm relative overflow-hidden"
+            className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm relative overflow-hidden shrink-0"
           >
             {/* Subtle glow accent */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 blur-3xl pointer-events-none rounded-full" />
 
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-1.5 text-xs font-mono text-sky-500 mb-1">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>GOOGLE CALENDAR</span>
+              <div className="mb-2.5">
+                <GoogleCalendarIcon className="w-6 h-6" />
               </div>
               <CardTitle className="text-xl font-serif font-normal">
                 Book a meeting
@@ -272,15 +334,15 @@ export default function ContactView() {
             <CardContent className="space-y-5">
               <div className="space-y-2.5 text-sm">
                 <div className="flex items-start gap-2.5 text-muted-foreground">
-                  <Clock className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                  <Clock className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                   <span>30-minute discovery & architecture session</span>
                 </div>
                 <div className="flex items-start gap-2.5 text-muted-foreground">
-                  <Video className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                  <GoogleMeetIcon className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>Google Meet conference link generated automatically</span>
                 </div>
                 <div className="flex items-start gap-2.5 text-muted-foreground">
-                  <Globe className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
+                  <Globe className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                   <span>Instant timezone conversion for seamless scheduling</span>
                 </div>
               </div>
@@ -293,22 +355,22 @@ export default function ContactView() {
                   data-testid="book-calendar-btn"
                   className={cn(
                     buttonVariants({ variant: "default" }),
-                    "w-full h-11 text-sm font-medium gap-2 justify-center shadow-sm cursor-pointer"
+                    "w-full h-11 text-sm font-medium gap-2 justify-center shadow-sm cursor-pointer bg-white text-black hover:bg-neutral-100 border border-neutral-200/80 dark:border-transparent dark:bg-white dark:text-black dark:hover:bg-neutral-100"
                   )}
                 >
-                  <Calendar className="w-4 h-4" />
-                  <span>Schedule on Google Calendar</span>
-                  <ArrowUpRight className="w-4 h-4" />
+                  <Calendar className="w-4 h-4 text-black" />
+                  <span className="text-black">Schedule on Google Calendar</span>
+                  <ArrowUpRight className="w-4 h-4 text-black" />
                 </a>
               </div>
             </CardContent>
           </Card>
 
           {/* Quick Email & Social Connect Card */}
-          <Card className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm">
+          <Card className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm flex-1 flex flex-col justify-between">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground mb-1">
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>DIRECT CHANNELS</span>
               </div>
               <CardTitle className="text-base font-serif font-normal">
@@ -316,7 +378,7 @@ export default function ContactView() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-1 flex flex-col justify-between">
               {/* Copy Email Pill */}
               <div className="flex items-center justify-between gap-2 p-2 bg-secondary/50 rounded-xl border border-border">
                 <div className="flex items-center gap-2 px-2 overflow-hidden">
@@ -330,7 +392,7 @@ export default function ContactView() {
                   variant="ghost"
                   size="xs"
                   onClick={handleCopyEmail}
-                  className="rounded-lg shrink-0 cursor-pointer"
+                  className="rounded-lg shrink-0 cursor-pointer text-muted-foreground hover:text-foreground"
                 >
                   {copied ? (
                     <>
@@ -339,7 +401,7 @@ export default function ContactView() {
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3 h-3 mr-1" />
+                      <Copy className="w-3 h-3 text-muted-foreground mr-1" />
                       <span className="text-xs">Copy</span>
                     </>
                   )}
@@ -354,7 +416,7 @@ export default function ContactView() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  GitHub <ArrowUpRight className="w-3 h-3" />
+                  GitHub <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
                 </a>
                 <a
                   href="https://x.com/akacolf"
@@ -362,7 +424,7 @@ export default function ContactView() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  X / Twitter <ArrowUpRight className="w-3 h-3" />
+                  X / Twitter <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
                 </a>
                 <a
                   href="https://linkedin.com/in/colf"
@@ -370,7 +432,7 @@ export default function ContactView() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  LinkedIn <ArrowUpRight className="w-3 h-3" />
+                  LinkedIn <ArrowUpRight className="w-3 h-3 text-muted-foreground" />
                 </a>
               </div>
             </CardContent>
