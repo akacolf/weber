@@ -245,7 +245,7 @@ test.describe('Featured Projects Showcase tests', () => {
     await page.goto('/');
 
     // Verify hero section is present
-    const greeting = page.getByRole('heading', { name: 'Nice to meet you.' });
+    const greeting = page.getByRole('heading', { name: 'Welcome to my website.' });
     await expect(greeting).toBeVisible();
 
     // Verify featured projects section exists
@@ -373,3 +373,43 @@ test.describe('Stats section tests', () => {
     await expect(statsSection.getByText('Performance', { exact: true })).not.toBeVisible();
   });
 });
+
+test.describe('Keynote Greeting Intro tests', () => {
+  test('displays keynote greeting with "Hi I\'m Colf." and "Awesome meeting you."', async ({ page }) => {
+    // Visit page fresh with ?intro=true to ensure intro triggers
+    await page.goto('/?intro=true');
+
+    // Overlay is present
+    const overlay = page.locator('[data-testid="keynote-intro-overlay"]');
+    await expect(overlay).toBeVisible();
+
+    // Slide 1 contains "Hi I'm Colf."
+    const slide1 = page.locator('[data-testid="keynote-greeting-1"]');
+    await expect(slide1).toBeVisible();
+    await expect(slide1).toContainText("Hi I'm Colf.");
+
+    // Slide 2 contains "Awesome meeting you." (appears after transition)
+    const slide2 = page.locator('[data-testid="keynote-greeting-2"]');
+    await expect(slide2).toBeVisible({ timeout: 5000 });
+    await expect(slide2).toContainText("Awesome meeting you.");
+
+    // Eventually overlay exits and reveals the landing page with "Welcome to my website."
+    await expect(overlay).not.toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
+  });
+
+  test('skip button immediately dismisses the keynote intro', async ({ page }) => {
+    await page.goto('/?intro=true');
+
+    const overlay = page.locator('[data-testid="keynote-intro-overlay"]');
+    await expect(overlay).toBeVisible();
+
+    const skipBtn = page.locator('[data-testid="skip-intro-btn"]');
+    await expect(skipBtn).toBeVisible();
+    await skipBtn.click();
+
+    await expect(overlay).not.toBeVisible({ timeout: 3000 });
+    await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
+  });
+});
+
