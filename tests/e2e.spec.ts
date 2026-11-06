@@ -375,40 +375,47 @@ test.describe('Stats section tests', () => {
 });
 
 test.describe('Keynote Greeting Intro tests', () => {
-  test('displays keynote greeting with "Hi I\'m Colf." and "Awesome meeting you."', async ({ page }) => {
-    // Visit page fresh with ?intro=true to ensure intro triggers
-    await page.goto('/?intro=true');
+  test('displays keynote greeting on mount with 3s per slide without lights or skip buttons, then transitions to home', async ({ page }) => {
+    // Visit page on normal mount (no query params needed)
+    await page.goto('/');
 
-    // Overlay is present
+    // Overlay is present on mount
     const overlay = page.locator('[data-testid="keynote-intro-overlay"]');
     await expect(overlay).toBeVisible();
+
+    // Verify skip button does NOT exist
+    const skipBtn = page.locator('[data-testid="skip-intro-btn"]');
+    await expect(skipBtn).toHaveCount(0);
 
     // Slide 1 contains "Hi I'm Colf."
     const slide1 = page.locator('[data-testid="keynote-greeting-1"]');
     await expect(slide1).toBeVisible();
     await expect(slide1).toContainText("Hi I'm Colf.");
 
-    // Slide 2 contains "Awesome meeting you." (appears after transition)
+    // Verify timer line is visible without any text
+    const timer = page.locator('[data-testid="keynote-timer"]');
+    await expect(timer).toBeVisible();
+    await expect(timer).toHaveText('');
+
+    // Clicking anywhere does NOT dismiss the intro
+    await page.mouse.click(200, 200);
+    await expect(overlay).toBeVisible();
+
+    // Slide 2 contains "Awesome meeting you." (appears at 3 seconds)
     const slide2 = page.locator('[data-testid="keynote-greeting-2"]');
-    await expect(slide2).toBeVisible({ timeout: 5000 });
+    await expect(slide2).toBeVisible({ timeout: 6000 });
     await expect(slide2).toContainText("Awesome meeting you.");
 
-    // Eventually overlay exits and reveals the landing page with "Welcome to my website."
-    await expect(overlay).not.toBeVisible({ timeout: 8000 });
+    // Eventually overlay exits at ~6s + 700ms and reveals the landing page with "Welcome to my website."
+    await expect(overlay).not.toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
   });
 
-  test('skip button immediately dismisses the keynote intro', async ({ page }) => {
-    await page.goto('/?intro=true');
+  test('skipIntro query param bypasses the keynote greeting on mount', async ({ page }) => {
+    await page.goto('/?skipIntro=true');
 
     const overlay = page.locator('[data-testid="keynote-intro-overlay"]');
-    await expect(overlay).toBeVisible();
-
-    const skipBtn = page.locator('[data-testid="skip-intro-btn"]');
-    await expect(skipBtn).toBeVisible();
-    await skipBtn.click();
-
-    await expect(overlay).not.toBeVisible({ timeout: 3000 });
+    await expect(overlay).not.toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
   });
 });
