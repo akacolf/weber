@@ -373,3 +373,76 @@ test.describe('Stats section tests', () => {
     await expect(statsSection.getByText('Performance', { exact: true })).not.toBeVisible();
   });
 });
+
+test.describe('Contact page tests', () => {
+  test('renders contact form from shadcn and Google Calendar booking section', async ({ page }) => {
+    await page.goto('/contact');
+
+    // Page title and heading
+    await expect(page).toHaveTitle('<Contact me>');
+    await expect(page.getByRole('heading', { name: "Let's build together." })).toBeVisible();
+
+    // Verify shadcn contact form exists with all fields
+    const form = page.locator('[data-testid="contact-form"]');
+    await expect(form).toBeVisible();
+    await expect(page.getByLabel(/Your Name/i)).toBeVisible();
+    await expect(page.getByLabel(/Email Address/i)).toBeVisible();
+    await expect(page.getByLabel(/Subject \/ Project Category/i)).toBeVisible();
+    await expect(page.getByLabel(/Message/i)).toBeVisible();
+    await expect(form.getByRole('button', { name: /Send message/i })).toBeVisible();
+
+    // Verify Google Calendar meeting booking section
+    const calendarSection = page.locator('[data-testid="calendar-booking-section"]');
+    await expect(calendarSection).toBeVisible();
+    await expect(calendarSection.getByRole('heading', { name: 'Book a meeting' })).toBeVisible();
+
+    const calendarBtn = calendarSection.locator('[data-testid="book-calendar-btn"]');
+    await expect(calendarBtn).toBeVisible();
+    await expect(calendarBtn).toHaveAttribute('href', 'https://calendar.app.google/EtDmg8dKUaTUUYWw7');
+    await expect(calendarBtn).toHaveAttribute('target', '_blank');
+  });
+
+  test('submitting contact form displays interactive success feedback and allows reset', async ({ page }) => {
+    await page.goto('/contact');
+    await page.waitForLoadState('domcontentloaded');
+
+    // Fill out form
+    const nameInput = page.locator('#name');
+    await expect(nameInput).toBeVisible();
+    await nameInput.click();
+    await nameInput.fill('Sarah Connor');
+
+    const emailInput = page.locator('#email');
+    await emailInput.click();
+    await emailInput.fill('sarah@cyberdyne.io');
+
+    const subjectInput = page.locator('#subject');
+    await subjectInput.click();
+    await subjectInput.fill('Full Stack AI Platform');
+
+    const messageInput = page.locator('#message');
+    await messageInput.click();
+    await messageInput.fill('Looking to collaborate on a new high-throughput application.');
+
+    // Submit form
+    await page.getByRole('button', { name: /Send message/i }).click();
+
+    // Verify success confirmation card
+    const successCard = page.locator('[data-testid="contact-success-state"]');
+    await expect(successCard).toBeVisible({ timeout: 8000 });
+    await expect(successCard.getByText('Message received!')).toBeVisible();
+    await expect(successCard.getByText('Sarah Connor')).toBeVisible();
+    await expect(successCard.getByText('sarah@cyberdyne.io')).toBeVisible();
+
+    // Click "Send another message"
+    const resetBtn = successCard.getByRole('button', { name: /Send another message/i });
+    await expect(resetBtn).toBeVisible();
+    await resetBtn.click();
+
+    // Form is restored and empty
+    const form = page.locator('[data-testid="contact-form"]');
+    await expect(form).toBeVisible();
+    await expect(page.locator('#name')).toHaveValue('');
+  });
+});
+
