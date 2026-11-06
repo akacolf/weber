@@ -491,6 +491,4 @@ test.describe('Keynote Greeting Intro tests', () => {
     await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
   });
 });
-  });
-});
 
