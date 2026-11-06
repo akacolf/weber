@@ -64,18 +64,11 @@ export default function Stats() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {STATS_DATA.map((item, index) => (
+          {STATS_DATA.map((item) => (
             <div
               key={item.id}
               className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-card/60 dark:bg-card/40 backdrop-blur-sm p-6 transition-all duration-300 hover:border-foreground/20 hover:shadow-lg dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.35)] hover:-translate-y-0.5"
             >
-              {/* Top Meta Line */}
-              <div className="mb-6">
-                <span className="font-mono text-xs text-muted-foreground">
-                  0{index + 1}
-                </span>
-              </div>
-
               {/* Big Stat Value */}
               <div className="space-y-2">
                 <div className="flex items-baseline gap-1.5">

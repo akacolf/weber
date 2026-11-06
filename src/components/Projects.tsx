@@ -4,9 +4,22 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+
+interface ProjectLink {
+  label: string;
+  url: string;
+}
 
 interface ProjectItem {
   id: string;
@@ -16,7 +29,8 @@ interface ProjectItem {
   year?: string;
   description: string;
   tags: string[];
-  githubUrl: string;
+  githubUrl?: string;
+  links?: ProjectLink[];
   renderPreview: () => React.ReactNode;
 }
 
@@ -25,7 +39,7 @@ const FEATURED_PROJECTS: ProjectItem[] = [
     id: "quantum-club",
     title: "Quantum Club",
     domain: "Blockchain • AI",
-    badges: ["Blockchain • AI", "Web app"],
+    badges: ["Blockchain • Web3 • AI", "Webapp"],
     year: "2024",
     description:
       "Web3 super app that combined DeFi, social, and AI on TON. Scaled to 3000 users and counting and received a grant from STON.fi.",
@@ -40,6 +54,54 @@ const FEATURED_PROJECTS: ProjectItem[] = [
           className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
+        />
+      </div>
+    ),
+  },
+  {
+    id: "jarvis-wallet",
+    title: "Jarvis Wallet",
+    domain: "Voice Agent • AI",
+    badges: ["Voice Agent • AI", "Blockchain • Web3", "Webapp"],
+    year: "2026",
+    description:
+      "Jarvis Wallet enables agentic execution capabilities by voice. You can swap and stake your crypto via voice commands and interact with your agent about anything related to your assets. You can chat with or share your requests with Jarvis within the chat interface.\n\nBuilt during the STON.fi hackathon cohort 1.",
+    tags: ["TypeScript", "Next.js", "Google Generative AI", "Google TTS", "n8n"],
+    githubUrl: "https://github.com/akacolf/jarvis-wallet",
+    renderPreview: () => (
+      <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
+        <Image
+          src="/projects/jarviswallet.png"
+          alt="Jarvis Wallet banner"
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      </div>
+    ),
+  },
+  {
+    id: "codeus",
+    title: "Codeus",
+    domain: "Developer Tools",
+    badges: ["Dev Tools • AI", "CLI • App • API"],
+    year: "2026",
+    description:
+      "The Codeus CLI was built as a dev tool to empower onchain development workflows alongside agentic software development. Major blockchains are connected via MCP servers and the agent verifies smart contracts.\n\nBuilt during the STON.fi hackathon cohort 2.",
+    tags: ["TypeScript", "Rust"],
+    links: [
+      { label: "Codeus CLI", url: "https://github.com/akacolf/codeus-cli" },
+      { label: "Codeus App", url: "https://github.com/akacolf/codeus-app" },
+      { label: "Codeus API", url: "https://github.com/akacolf/codeus-api" },
+    ],
+    renderPreview: () => (
+      <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
+        <Image
+          src="/projects/codeuscli.png"
+          alt="Codeus CLI banner"
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
     ),
@@ -113,20 +175,62 @@ export default function Projects() {
                     ))}
                   </div>
 
-                  {/* Actions - single external button */}
+                  {/* Actions - direct link or dropdown menu */}
                   <div className="flex items-center gap-1.5">
-                    <Link
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`Repository for ${project.title}`}
-                      className={cn(
-                        buttonVariants({ variant: "ghost", size: "icon-xs" }),
-                        "rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-                      )}
-                    >
-                      <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </Link>
+                    {project.links && project.links.length > 0 ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              aria-label={`Repositories for ${project.title}`}
+                              className="rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                            >
+                              <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent align="end" className="w-48 p-1.5">
+                          <DropdownMenuGroup>
+                            <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60 px-2 py-1">
+                              Repositories
+                            </DropdownMenuLabel>
+                            {project.links.map((link) => (
+                              <DropdownMenuItem
+                                key={link.url}
+                                onClick={() => window.open(link.url, "_blank", "noopener,noreferrer")}
+                                className="flex items-center justify-between w-full px-2 py-1.5 text-xs font-mono text-muted-foreground hover:text-foreground cursor-pointer rounded-md transition-colors"
+                              >
+                                <a
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center justify-between w-full"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <span>{link.label}</span>
+                                  <ArrowUpRight className="w-3.5 h-3.5 opacity-60" />
+                                </a>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : project.githubUrl ? (
+                      <Link
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Repository for ${project.title}`}
+                        className={cn(
+                          buttonVariants({ variant: "ghost", size: "icon-xs" }),
+                          "rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
+                      >
+                        <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </Link>
+                    ) : null}
                   </div>
                 </div>
 
@@ -146,9 +250,16 @@ export default function Projects() {
                     )}
                   </div>
 
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {project.description}
-                  </p>
+                  <div className="space-y-2">
+                    {project.description.split("\n\n").map((paragraph, pIdx) => (
+                      <p
+                        key={pIdx}
+                        className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
+                      >
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
 

@@ -269,9 +269,9 @@ test.describe('Featured Projects Showcase tests', () => {
       )
     ).toBeVisible();
 
-    // Verify badges (Blockchain • AI and Web app)
-    await expect(projectsSection.getByText('Blockchain • AI')).toBeVisible();
-    await expect(projectsSection.getByText('Web app', { exact: true })).toBeVisible();
+    // Verify badges (Blockchain • Web3 • AI and Webapp)
+    await expect(projectsSection.getByText('Blockchain • Web3 • AI')).toBeVisible();
+    await expect(projectsSection.getByText('Webapp').first()).toBeVisible();
 
     // Verify project banner image is displayed
     await expect(projectsSection.getByAltText(/quantum club banner/i)).toBeVisible();
@@ -280,16 +280,47 @@ test.describe('Featured Projects Showcase tests', () => {
     await expect(projectsSection.getByText(/contrast audit/i)).not.toBeVisible();
     await expect(projectsSection.getByText(/WCAG AAA/i)).not.toBeVisible();
 
-    // Verify tech stack tags
-    await expect(projectsSection.getByText('TypeScript')).toBeVisible();
-    await expect(projectsSection.getByText('JavaScript')).toBeVisible();
-    await expect(projectsSection.getByText('Next.js')).toBeVisible();
-    await expect(projectsSection.getByText('Tailwind CSS')).toBeVisible();
+    // Verify tech stack tags on Quantum Club card
+    const quantumArticle = projectsSection.locator('article').filter({ hasText: 'Quantum Club' });
+    await expect(quantumArticle.getByText('TypeScript')).toBeVisible();
+    await expect(quantumArticle.getByText('JavaScript')).toBeVisible();
+    await expect(quantumArticle.getByText('Next.js')).toBeVisible();
+    await expect(quantumArticle.getByText('Tailwind CSS')).toBeVisible();
 
-    // Verify only ONE external action button exists for the project
-    const actionButtons = projectsSection.locator('article a[target="_blank"]');
-    await expect(actionButtons).toHaveCount(1);
-    await expect(actionButtons).toHaveAttribute('href', 'https://github.com/akacolf/quantum-club-webapp');
+    // Verify direct repo links for Quantum Club & Jarvis Wallet
+    const quantumLink = quantumArticle.getByRole('link', { name: /repository for quantum club/i });
+    await expect(quantumLink).toHaveAttribute('href', 'https://github.com/akacolf/quantum-club-webapp');
+
+    // Verify Jarvis Wallet project card, repo link, and cohort 1 description
+    const jarvisArticle = projectsSection.locator('article').filter({ hasText: 'Jarvis Wallet' });
+    await expect(jarvisArticle.getByRole('heading', { name: 'Jarvis Wallet' })).toBeVisible();
+    await expect(jarvisArticle.getByAltText(/jarvis wallet banner/i)).toBeVisible();
+    await expect(jarvisArticle.getByText(/Built during the STON\.fi hackathon cohort 1/i)).toBeVisible();
+    const jarvisLink = jarvisArticle.getByRole('link', { name: /repository for jarvis wallet/i });
+    await expect(jarvisLink).toHaveAttribute('href', 'https://github.com/akacolf/jarvis-wallet');
+
+    // Verify Codeus project card, cohort 2 description, and dropdown menu with 3 repo links
+    const codeusArticle = projectsSection.locator('article').filter({ hasText: 'Codeus' });
+    await expect(codeusArticle.getByRole('heading', { name: 'Codeus' })).toBeVisible();
+    await expect(codeusArticle.getByAltText(/codeus cli banner/i)).toBeVisible();
+    await expect(codeusArticle.getByText(/Built during the STON\.fi hackathon cohort 2/i)).toBeVisible();
+
+    const codeusMenuTrigger = codeusArticle.getByRole('button', { name: /repositories for codeus/i });
+    await expect(codeusMenuTrigger).toBeVisible();
+    await codeusMenuTrigger.click();
+
+    const cliItem = page.getByRole('menuitem', { name: /codeus cli/i });
+    const appItem = page.getByRole('menuitem', { name: /codeus app/i });
+    const apiItem = page.getByRole('menuitem', { name: /codeus api/i });
+
+    await expect(cliItem).toBeVisible();
+    await expect(cliItem.locator('a')).toHaveAttribute('href', 'https://github.com/akacolf/codeus-cli');
+
+    await expect(appItem).toBeVisible();
+    await expect(appItem.locator('a')).toHaveAttribute('href', 'https://github.com/akacolf/codeus-app');
+
+    await expect(apiItem).toBeVisible();
+    await expect(apiItem.locator('a')).toHaveAttribute('href', 'https://github.com/akacolf/codeus-api');
   });
 
   test('featured projects link to products archive', async ({ page }) => {
@@ -298,7 +329,10 @@ test.describe('Featured Projects Showcase tests', () => {
     const projectsSection = page.locator('section#projects');
     const viewAllBtn = projectsSection.getByRole('link', { name: 'View all products' });
     await expect(viewAllBtn).toBeVisible();
-    await viewAllBtn.click();
+    await Promise.all([
+      page.waitForURL(/\/products$/),
+      viewAllBtn.click(),
+    ]);
     await expect(page).toHaveURL(/\/products$/);
   });
 });
@@ -322,7 +356,7 @@ test.describe('Stats section tests', () => {
     await expect(statsSection.getByText('Active users scaled')).toBeVisible();
 
     await expect(statsSection.getByText('3+')).toBeVisible();
-    await expect(statsSection.getByText('Experience')).toBeVisible();
+    await expect(statsSection.getByRole('heading', { name: 'Experience' })).toBeVisible();
 
     // Verify Projects completed replaces STON.fi grant recipient
     await expect(statsSection.getByText('Projects completed')).toBeVisible();
