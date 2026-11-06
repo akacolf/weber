@@ -1,10 +1,14 @@
 import CodeTerminal from "@/components/CodeTerminal";
 import Stats from "@/components/Stats";
 import FeaturedProjects from "@/components/Projects";
+import KeynoteIntro from "@/components/KeynoteIntro";
 
 export default function Home() {
   return (
     <main className="flex-1 bg-background relative overflow-hidden">
+      {/* Keynote Greeting Intro Overlay */}
+      <KeynoteIntro />
+
       {/* Hero Section */}
       <section className="relative pt-16 sm:pt-24 pb-16 sm:pb-24 px-4 sm:px-6">
         {/* Subtle atmospheric ambient glow */}
@@ -14,7 +18,7 @@ export default function Home() {
           {/* Editorial Greeting Header */}
           <div className="text-center space-y-2">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-normal tracking-tight text-foreground font-serif">
-              Nice to meet you.
+              Welcome to my website.
             </h1>
           </div>
 
