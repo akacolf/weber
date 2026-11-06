@@ -1,61 +1,76 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useStore } from "@tanstack/react-store";
+import { introStore, markIntroAsPlayed } from "@/lib/introStore";
+
+const shouldSkipIntro = (hasPlayed: boolean): boolean => {
+  if (hasPlayed) return true;
+  if (typeof window !== "undefined") {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("skipIntro") === "true") {
+        return true;
+      }
+    } catch {
+      // Proceed if search params unavailable
+    }
+  }
+  return false;
+};
 
 export default function KeynoteIntro() {
-  const [phase, setPhase] = useState<"slide1" | "slide2" | "exit" | "done">("slide1");
+  const hasPlayed = useStore(introStore, (state) => state.hasPlayed);
+  const skip = shouldSkipIntro(hasPlayed);
+  const [phase, setPhase] = useState<"slide1" | "slide2" | "exit" | "done">(() =>
+    skip ? "done" : "slide1"
+  );
   const [progress, setProgress] = useState(0);
+  const hasStartedRef = useRef(false);
 
   const finishIntro = useCallback(() => {
     setPhase("exit");
     const timer = setTimeout(() => {
       setPhase("done");
+      markIntroAsPlayed();
     }, 700);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    // Clear any legacy storage key
-    try {
-      sessionStorage.removeItem("colf_keynote_intro_seen");
-    } catch {
-      // Ignore storage errors in private browsing
+    if (skip || hasPlayed) {
+      return;
     }
 
-    // Check if explicitly requested to skip intro via URL query (?skipIntro=true)
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get("skipIntro") === "true") {
-        setPhase("done");
-        return;
-      }
-    } catch {
-      // Proceed if search params unavailable
-    }
+    hasStartedRef.current = true;
 
-    // Trigger smooth 6-second timer line progress animation on mount
+    // Trigger smooth 4-second timer line progress animation on mount
     const animFrame = requestAnimationFrame(() => {
       setProgress(100);
     });
 
-    // Phase 1 is active on mount ("Hi I'm Colf.") for 3 seconds (3000ms)
+    // Phase 1 is active on mount ("Hi I'm Colf.") for 2 seconds (2000ms)
     const t1 = setTimeout(() => {
       setPhase("slide2");
-    }, 3000);
+    }, 2000);
 
-    // Phase 2 ("Awesome meeting you.") lasts for 3 seconds, then transitions to exit at 6000ms
+    // Phase 2 ("Awesome meeting you.") lasts for 2 seconds, then transitions to exit at 4000ms
     const t2 = setTimeout(() => {
       finishIntro();
-    }, 6000);
+    }, 4000);
 
     return () => {
       cancelAnimationFrame(animFrame);
       clearTimeout(t1);
       clearTimeout(t2);
+      // If the component unmounts while intro was active (e.g. user navigated away), mark as played
+      if (hasStartedRef.current) {
+        markIntroAsPlayed();
+      }
     };
-  }, [finishIntro]);
+  }, [skip, hasPlayed, finishIntro]);
 
-  if (phase === "done") {
+  if (skip || hasPlayed || phase === "done") {
     return null;
   }
 
@@ -109,14 +124,14 @@ export default function KeynoteIntro() {
         </div>
       </div>
 
-      {/* Minimalist Wait Timer Line (just the timer line, no text) */}
+      {/* Minimalist Wait Timer Line (just the timer line, 4s total duration) */}
       <div
         data-testid="keynote-timer"
         className="absolute bottom-10 sm:bottom-12 left-1/2 -translate-x-1/2 w-36 sm:w-48 h-[2px] bg-white/10 rounded-full overflow-hidden pointer-events-none"
       >
         <div
           data-testid="keynote-timer-line"
-          className="h-full bg-white/40 rounded-full transition-all duration-[6000ms] ease-linear min-w-[2px]"
+          className="h-full bg-white/40 rounded-full transition-all duration-[4000ms] ease-linear min-w-[2px]"
           style={{ width: `${progress}%` }}
         />
       </div>

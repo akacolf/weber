@@ -42,7 +42,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${libreBaskerville.variable} ${geistMono.variable} font-libre_baskerville h-full antialiased`}
     >
-      <body className={`${libreBaskerville.className} min-h-full flex flex-col bg-background text-foreground`}>
+      <body className={`${libreBaskerville.className} min-h-full flex flex-col bg-background text-foreground selection:bg-neutral-300 selection:text-neutral-900 dark:selection:bg-neutral-700 dark:selection:text-white`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

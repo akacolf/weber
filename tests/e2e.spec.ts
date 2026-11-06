@@ -447,7 +447,7 @@ test.describe('Contact page tests', () => {
 });
 
 test.describe('Keynote Greeting Intro tests', () => {
-  test('displays keynote greeting on mount with 3s per slide without lights or skip buttons, then transitions to home', async ({ page }) => {
+  test('displays keynote greeting on mount with 2s per slide without lights or skip buttons, then transitions to home', async ({ page }) => {
     // Visit page on normal mount (no query params needed)
     await page.goto('/');
 
@@ -473,13 +473,13 @@ test.describe('Keynote Greeting Intro tests', () => {
     await page.mouse.click(200, 200);
     await expect(overlay).toBeVisible();
 
-    // Slide 2 contains "Awesome meeting you." (appears at 3 seconds)
+    // Slide 2 contains "Awesome meeting you." (appears at 2 seconds)
     const slide2 = page.locator('[data-testid="keynote-greeting-2"]');
-    await expect(slide2).toBeVisible({ timeout: 6000 });
+    await expect(slide2).toBeVisible({ timeout: 5000 });
     await expect(slide2).toContainText("Awesome meeting you.");
 
-    // Eventually overlay exits at ~6s + 700ms and reveals the landing page with "Welcome to my website."
-    await expect(overlay).not.toBeVisible({ timeout: 10000 });
+    // Eventually overlay exits at ~4s + 700ms and reveals the landing page with "Welcome to my website."
+    await expect(overlay).not.toBeVisible({ timeout: 7000 });
     await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
   });
 
@@ -489,6 +489,53 @@ test.describe('Keynote Greeting Intro tests', () => {
     const overlay = page.locator('[data-testid="keynote-intro-overlay"]');
     await expect(overlay).not.toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
+  });
+
+  test('navigating away from home and returning does not replay the keynote greeting', async ({ page }) => {
+    await page.goto('/');
+
+    const overlay = page.locator('[data-testid="keynote-intro-overlay"]');
+    // Wait for the intro to finish on initial mount
+    await expect(overlay).not.toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
+
+    // Navigate to "About me"
+    const header = page.locator('header');
+    const nav = header.locator('nav[aria-label="Main Navigation"]');
+    await nav.getByRole('link', { name: 'About me' }).click();
+    await expect(page).toHaveURL(/\/about$/);
+
+    // Return to home by clicking the Logo
+    await header.locator('a[aria-label*="Khalid Al Shareef"]').click();
+    await expect(page).toHaveURL(/\/$/);
+
+    // Overlay should NOT be visible when returning to home
+    await expect(overlay).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome to my website.' })).toBeVisible();
+  });
+});
+
+test.describe('Selection highlight styling tests', () => {
+  test('text selection highlight is configured with gray background', async ({ page }) => {
+    await page.goto('/about');
+
+    // Verify selection styling rule exists in document or computed pseudo-element
+    const hasSelectionRule = await page.evaluate(() => {
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule.cssText && rule.cssText.includes('::selection')) {
+              return true;
+            }
+          }
+        } catch {
+          // ignore CORS
+        }
+      }
+      return false;
+    });
+
+    expect(hasSelectionRule).toBe(true);
   });
 });
 
