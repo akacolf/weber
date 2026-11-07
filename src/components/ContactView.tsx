@@ -21,7 +21,6 @@ import {
   Check,
   Send,
   ArrowUpRight,
-  CheckCircle2,
   RefreshCw,
   AlertCircle,
 } from "lucide-react";
@@ -215,9 +214,7 @@ export default function ContactView() {
                   data-testid="contact-success-state"
                   className="py-10 px-4 text-center flex-1 flex flex-col items-center justify-center space-y-4"
                 >
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6" />
-                  </div>
+                  <Check className="w-8 h-8 text-emerald-500" />
                   <h3 className="text-xl font-medium text-foreground">
                     Message received!
                   </h3>
