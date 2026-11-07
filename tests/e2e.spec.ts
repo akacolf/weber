@@ -539,3 +539,182 @@ test.describe('Selection highlight styling tests', () => {
   });
 });
 
+test.describe("Products I've built timeline tests", () => {
+  test('renders products page with timeline starting from 2024 and shadcn timeline primitives', async ({
+    page,
+  }) => {
+    await page.goto('/products');
+
+    // Check document title
+    await expect(page).toHaveTitle("<Products I've built>");
+
+    // Check main heading and lime green highlight on "journey"
+    const heading = page.getByRole('heading', { name: /So far the journey\./i });
+    await expect(heading).toBeVisible();
+    const journeySpan = heading.locator('span', { hasText: 'journey' });
+    await expect(journeySpan).toBeVisible();
+    await expect(journeySpan).toHaveClass(/text-lime-/);
+
+    // Check adjusted product dates
+    await expect(page.getByText('2026 • June 2026')).toBeVisible();
+    await expect(page.getByText('2026 • April 2026')).toBeVisible();
+    await expect(page.getByText(/2024 • Q2 2024 \(March 2024\)/)).toBeVisible();
+
+    // Verify shadcn timeline primitive exists
+    const timeline = page.locator('[data-slot="timeline"]');
+    await expect(timeline).toBeVisible();
+
+    // Check products present in timeline
+    await expect(page.getByRole('heading', { name: 'Codeus' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
+
+    // Verify timeline items have connector and point
+    const timelineItems = page.locator('[data-slot="timeline-item"]');
+    await expect(timelineItems).toHaveCount(3); // Codeus, Jarvis, Quantum Club
+
+    const connectors = page.locator('[data-slot="timeline-connector"]');
+    await expect(connectors.first()).toBeVisible();
+
+    const points = page.locator('[data-slot="timeline-point"]');
+    await expect(points).toHaveCount(3);
+  });
+
+  test('category filters work and update timeline products', async ({ page }) => {
+    await page.goto('/products');
+
+    // Filter by "AI & Agents"
+    await page.getByRole('tab', { name: /AI & Agents/i }).click();
+    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Codeus' })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Quantum Club' })).not.toBeVisible();
+
+    // Filter by "Dev Tools"
+    await page.getByRole('tab', { name: /Dev Tools/i }).click();
+    await expect(page.getByRole('heading', { name: 'Codeus' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Quantum Club' })).not.toBeVisible();
+
+    // Filter by "Web3 & DeFi"
+    await page.getByRole('tab', { name: /Web3 & DeFi/i }).click();
+    await expect(page.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).not.toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Codeus' })).not.toBeVisible();
+
+    // Reset back to "All Products"
+    await page.getByRole('tab', { name: /All Products/i }).click();
+    await expect(page.getByRole('heading', { name: 'Codeus' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
+  });
+
+  test('sort order toggle switches between newest and oldest first', async ({ page }) => {
+    await page.goto('/products');
+
+    const sortButton = page.getByRole('button', { name: /Sort timeline/i });
+    await expect(sortButton).toBeVisible();
+
+    // Initially newest first: Codeus (2026), Jarvis Wallet (2026), Quantum Club (2024)
+    const titles = page.locator('[data-slot="timeline-title"]');
+    await expect(titles.nth(0)).toHaveText('Codeus');
+    await expect(titles.nth(2)).toHaveText('Quantum Club');
+
+    // Toggle sort order to oldest first (2024 -> 2026)
+    await sortButton.click();
+    await expect(sortButton).toContainText('Oldest (2024');
+
+    // In oldest first: Quantum Club (2024) should be first among products
+    await expect(titles.nth(0)).toHaveText('Quantum Club');
+  });
+
+  test('repositories dropdown opens and displays links for multi-repo products', async ({ page }) => {
+    await page.goto('/products');
+
+    const repoButton = page.getByRole('button', { name: 'Repositories for Codeus' });
+    await expect(repoButton).toBeVisible();
+
+    // Open dropdown
+    await repoButton.click();
+
+    // Dropdown content should display CLI, App, API links
+    await expect(page.getByRole('menuitem', { name: /Codeus CLI/i })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /Codeus App/i })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /Codeus API/i })).toBeVisible();
+  });
+});
+
+test.describe('Rotating Welcome in multiple languages tests', () => {
+  test('displays rotating welcome word in lime green and cycles through languages', async ({
+    page,
+  }) => {
+    await page.goto('/?skipIntro=true');
+
+    // Heading has accessible name
+    const heading = page.getByRole('heading', { name: 'Welcome to my website.' });
+    await expect(heading).toBeVisible();
+
+    // Rotating welcome container and word exist
+    const welcomeWord = page.locator('[data-testid="rotating-welcome-word"]');
+    await expect(welcomeWord).toBeVisible();
+
+    // Initially displays "Welcome" and is colored lime green
+    await expect(welcomeWord).toHaveText('Welcome');
+    await expect(welcomeWord).toHaveClass(/text-lime-/);
+
+    // Suffix text "to my website." is visible without clipping
+    const suffix = page.locator('[data-testid="welcome-suffix"]');
+    await expect(suffix).toBeVisible();
+
+    // Verify suffix container does not have overflow-hidden causing descender clipping
+    const overflowStyle = await suffix.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      const parentStyle = el.parentElement ? window.getComputedStyle(el.parentElement) : null;
+      return {
+        selfOverflow: style.overflow,
+        parentOverflow: parentStyle?.overflow,
+        height: el.getBoundingClientRect().height,
+      };
+    });
+    expect(overflowStyle.selfOverflow).not.toBe('hidden');
+    expect(overflowStyle.parentOverflow).not.toBe('hidden');
+
+    // After animation interval, cycles to next language (e.g. "Bienvenido")
+    await expect(welcomeWord).not.toHaveText('Welcome', { timeout: 6000 });
+    await expect(welcomeWord).toHaveClass(/text-lime-/);
+  });
+
+  test('clicking rotating welcome container manually cycles to next language', async ({
+    page,
+  }) => {
+    await page.goto('/?skipIntro=true');
+
+    const container = page.locator('[data-testid="rotating-welcome-container"]');
+    await expect(container).toBeVisible();
+
+    const welcomeWord = page.locator('[data-testid="rotating-welcome-word"]');
+    await expect(welcomeWord).toHaveText('Welcome');
+
+    // Click container to cycle language
+    await container.click();
+    await expect(welcomeWord).toHaveText('Bienvenido');
+
+    // Click container again to cycle to next language (French: "Bienvenue")
+    await container.click();
+    await expect(welcomeWord).toHaveText('Bienvenue');
+  });
+
+  test('heading screenshot captures full descenders without any clipping in light and dark mode', async ({ page }) => {
+    await page.goto('/?skipIntro=true');
+    await page.waitForTimeout(500);
+    const heading = page.locator('h1');
+    await heading.screenshot({ path: 'test-results/heading-verified-light.png' });
+
+    // Switch to dark mode
+    await page.locator('html').evaluate((el) => el.classList.add('dark'));
+    await page.waitForTimeout(300);
+    await heading.screenshot({ path: 'test-results/heading-verified-dark.png' });
+  });
+});
+
+
+

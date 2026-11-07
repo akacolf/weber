@@ -19,4 +19,4 @@ This file collects ideas, features, and backlog items as they come up during the
 
 ## Archive / Implemented
 
-*(Items will move here once implemented)*
+- [x] **Products I've built Timeline**: Built an interactive chronological timeline page starting from 2024 to present featuring Codeus, Jarvis Wallet, and Quantum Club with a custom Shadcn-compatible `Timeline` primitive, category filters, newest/oldest sorting, multi-repository dropdowns, and responsive spine layout.

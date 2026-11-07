@@ -1,0 +1,97 @@
+name: Playwright UI & E2E Tests
+
+# This workflow checks for problems/regressions in the UI.
+# It only runs when UI-critical paths change or on manual dispatch.
+on:
+  push:
+    branches: [main, master, "feat/**"]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "tests/**"
+      - "playwright.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/playwright.yml"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "tests/**"
+      - "playwright.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/playwright.yml"
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: "Browser project to execute"
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - all
+          - chromium
+          - webkit
+
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright-ui-tests:
+    name: Playwright UI & Regression Suite
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browser binaries
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers with OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Install Playwright OS dependencies (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium webkit
+
+      - name: Build production Next.js bundle
+        run: npm run build
+
+      - name: Run Playwright tests
+        run: |
+          if [ "${{ github.event.inputs.browser }}" = "chromium" ]; then
+            npx playwright test --project=chromium
+          elif [ "${{ github.event.inputs.browser }}" = "webkit" ]; then
+            npx playwright test --project=webkit
+          else
+            npx playwright test
+          fi
+
+      - name: Upload Playwright test results and report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

@@ -46,12 +46,12 @@ const FEATURED_PROJECTS: ProjectItem[] = [
     tags: ["TypeScript", "JavaScript", "Next.js", "Tailwind CSS"],
     githubUrl: "https://github.com/akacolf/quantum-club-webapp",
     renderPreview: () => (
-      <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
         <Image
           src="/projects/quantumclub.png"
           alt="Quantum Club banner"
           fill
-          className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+          className="object-contain p-6 transition-transform duration-500 group-hover:scale-102"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
         />
@@ -69,12 +69,12 @@ const FEATURED_PROJECTS: ProjectItem[] = [
     tags: ["TypeScript", "Next.js", "Google Generative AI", "Google TTS", "n8n"],
     githubUrl: "https://github.com/akacolf/jarvis-wallet",
     renderPreview: () => (
-      <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
         <Image
           src="/projects/jarviswallet.png"
           alt="Jarvis Wallet banner"
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-contain transition-transform duration-500 group-hover:scale-102"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
@@ -95,12 +95,12 @@ const FEATURED_PROJECTS: ProjectItem[] = [
       { label: "Codeus API", url: "https://github.com/akacolf/codeus-api" },
     ],
     renderPreview: () => (
-      <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-black flex items-center justify-center group-hover:border-foreground/20 transition-all duration-300">
         <Image
           src="/projects/codeuscli.png"
           alt="Codeus CLI banner"
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-contain transition-transform duration-500 group-hover:scale-102"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>

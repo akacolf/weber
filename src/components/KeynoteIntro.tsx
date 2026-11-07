@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useSyncExternalStore } from "react";
 import { useStore } from "@tanstack/react-store";
 import { introStore, markIntroAsPlayed } from "@/lib/introStore";
+
+const emptySubscribe = () => () => {};
 
 const shouldSkipIntro = (hasPlayed: boolean): boolean => {
   if (hasPlayed) return true;
@@ -20,29 +22,30 @@ const shouldSkipIntro = (hasPlayed: boolean): boolean => {
 };
 
 export default function KeynoteIntro() {
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const hasPlayed = useStore(introStore, (state) => state.hasPlayed);
   const skip = shouldSkipIntro(hasPlayed);
   const [phase, setPhase] = useState<"slide1" | "slide2" | "exit" | "done">(() =>
     skip ? "done" : "slide1"
   );
   const [progress, setProgress] = useState(0);
-  const hasStartedRef = useRef(false);
+  const hasFinishedRef = useRef(false);
 
   const finishIntro = useCallback(() => {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
+    markIntroAsPlayed();
     setPhase("exit");
     const timer = setTimeout(() => {
       setPhase("done");
-      markIntroAsPlayed();
     }, 700);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (skip || hasPlayed) {
+    if (!mounted || skip || hasPlayed) {
       return;
     }
-
-    hasStartedRef.current = true;
 
     // Trigger smooth 4-second timer line progress animation on mount
     const animFrame = requestAnimationFrame(() => {
@@ -54,7 +57,7 @@ export default function KeynoteIntro() {
       setPhase("slide2");
     }, 2000);
 
-    // Phase 2 ("Awesome meeting you.") lasts for 2 seconds, then transitions to exit at 4000ms
+    // Phase 2 ("Awesome meeting you.") lasts 2 seconds, then transitions to exit at 4000ms
     const t2 = setTimeout(() => {
       finishIntro();
     }, 4000);
@@ -63,14 +66,10 @@ export default function KeynoteIntro() {
       cancelAnimationFrame(animFrame);
       clearTimeout(t1);
       clearTimeout(t2);
-      // If the component unmounts while intro was active (e.g. user navigated away), mark as played
-      if (hasStartedRef.current) {
-        markIntroAsPlayed();
-      }
     };
-  }, [skip, hasPlayed, finishIntro]);
+  }, [mounted, skip, hasPlayed, finishIntro]);
 
-  if (skip || hasPlayed || phase === "done") {
+  if (!mounted || skip || hasPlayed || phase === "done") {
     return null;
   }
 
@@ -100,9 +99,10 @@ export default function KeynoteIntro() {
           <div className="inline-block">
             <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight font-serif text-white">
               Hi I&apos;m{" "}
-              <span className="font-medium text-white">
-                Colf.
+              <span className="font-medium text-lime-400 dark:text-lime-400">
+                Colf
               </span>
+              .
             </h2>
           </div>
         </div>
@@ -118,13 +118,17 @@ export default function KeynoteIntro() {
         >
           <div className="inline-block">
             <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight font-serif text-white">
-              Awesome meeting you.
+              Awesome meeting{" "}
+              <span className="font-medium text-lime-400 dark:text-lime-400">
+                you
+              </span>
+              .
             </h2>
           </div>
         </div>
       </div>
 
-      {/* Minimalist Wait Timer Line (just the timer line, 4s total duration) */}
+      {/* Minimalist Wait Timer Line */}
       <div
         data-testid="keynote-timer"
         className="absolute bottom-10 sm:bottom-12 left-1/2 -translate-x-1/2 w-36 sm:w-48 h-[2px] bg-white/10 rounded-full overflow-hidden pointer-events-none"

@@ -19,8 +19,16 @@ const getInitialHasPlayed = (): boolean => {
 };
 
 export const introStore = new Store<IntroState>({
-  hasPlayed: getInitialHasPlayed(),
+  hasPlayed: false,
 });
+
+// Sync on client side
+if (typeof window !== "undefined") {
+  introStore.setState((state) => ({
+    ...state,
+    hasPlayed: getInitialHasPlayed(),
+  }));
+}
 
 export const markIntroAsPlayed = () => {
   introStore.setState((state) => ({

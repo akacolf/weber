@@ -284,7 +284,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
               )}
             >
               <TerminalIcon className="w-3.5 h-3.5 text-neutral-400" />
-              <span>bash ~ live</span>
+              <span>bash</span>
             </button>
           </div>
         </div>
