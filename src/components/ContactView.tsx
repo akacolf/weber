@@ -215,7 +215,7 @@ export default function ContactView() {
                   data-testid="contact-success-state"
                   className="py-10 px-4 text-center flex-1 flex flex-col items-center justify-center space-y-4"
                 >
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <h3 className="text-xl font-medium text-foreground">
