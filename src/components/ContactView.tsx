@@ -23,6 +23,7 @@ import {
   ArrowUpRight,
   CheckCircle2,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -107,6 +108,7 @@ export default function ContactView() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const email = "khalidthenoble@gmail.com";
@@ -123,18 +125,48 @@ export default function ContactView() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errorMessage) {
+      setErrorMessage(null);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setErrorMessage("Please fill in all required fields.");
+      return;
+    }
 
     setIsSubmitting(true);
-    // Simulate interactive submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "Failed to send message. Please try again or email directly."
+        );
+      }
+
       setIsSubmitted(true);
-    }, 700);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again.";
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -144,6 +176,7 @@ export default function ContactView() {
       subject: "",
       message: "",
     });
+    setErrorMessage(null);
     setIsSubmitted(false);
   };
 
@@ -279,6 +312,16 @@ export default function ContactView() {
                       />
                     </div>
                   </div>
+
+                  {errorMessage && (
+                    <div
+                      role="alert"
+                      className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm flex items-start gap-2.5"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
 
                   <div className="pt-2 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground">
