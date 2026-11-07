@@ -1,8 +1,41 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function POST(request: Request) {
   try {
+    // Enforce rate limiting based on client IP
+    const clientIp = getClientIp(request);
+    const rateLimitResult = checkRateLimit(`contact:${clientIp}`);
+
+    const rateLimitHeaders = {
+      "X-RateLimit-Limit": String(rateLimitResult.limit),
+      "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+      "X-RateLimit-Reset": String(rateLimitResult.reset),
+    };
+
+    if (!rateLimitResult.success) {
+      const waitMinutes = Math.ceil((rateLimitResult.retryAfter || 60) / 60);
+      const timeMessage =
+        waitMinutes > 1
+          ? `${waitMinutes} minutes`
+          : `${rateLimitResult.retryAfter || 60} seconds`;
+
+      return NextResponse.json(
+        {
+          error: `Too many requests. Please wait ${timeMessage} before submitting another message.`,
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            ...rateLimitHeaders,
+            "Retry-After": String(rateLimitResult.retryAfter || 60),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { name, email, subject, message } = body;
 
@@ -10,14 +43,14 @@ export async function POST(request: Request) {
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
         { error: "Name is required." },
-        { status: 400 }
+        { status: 400, headers: rateLimitHeaders }
       );
     }
 
     if (!email || typeof email !== "string" || !email.trim()) {
       return NextResponse.json(
         { error: "Email address is required." },
-        { status: 400 }
+        { status: 400, headers: rateLimitHeaders }
       );
     }
 
@@ -25,14 +58,14 @@ export async function POST(request: Request) {
     if (!emailRegex.test(email.trim())) {
       return NextResponse.json(
         { error: "Please provide a valid email address." },
-        { status: 400 }
+        { status: 400, headers: rateLimitHeaders }
       );
     }
 
     if (!message || typeof message !== "string" || !message.trim()) {
       return NextResponse.json(
         { error: "Message is required." },
-        { status: 400 }
+        { status: 400, headers: rateLimitHeaders }
       );
     }
 
@@ -60,12 +93,15 @@ export async function POST(request: Request) {
           `Message:\n${trimmedMessage}`
       );
 
-      return NextResponse.json({
-        success: true,
-        simulated: true,
-        message:
-          "Message received in development/test mode. Configure RESEND_API_KEY in .env.local for live delivery.",
-      });
+      return NextResponse.json(
+        {
+          success: true,
+          simulated: true,
+          message:
+            "Message received in development/test mode. Configure RESEND_API_KEY in .env.local for live delivery.",
+        },
+        { headers: rateLimitHeaders }
+      );
     }
 
     const resend = new Resend(apiKey);
@@ -147,14 +183,17 @@ ${trimmedMessage}
       console.error("[Contact API] Resend error:", result.error);
       return NextResponse.json(
         { error: result.error.message || "Failed to deliver message via email provider." },
-        { status: 502 }
+        { status: 502, headers: rateLimitHeaders }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      id: result.data?.id,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        id: result.data?.id,
+      },
+      { headers: rateLimitHeaders }
+    );
   } catch (err: unknown) {
     console.error("[Contact API] Unexpected error:", err);
     return NextResponse.json(
