@@ -315,9 +315,6 @@ export default function ContactView() {
             data-testid="calendar-booking-section"
             className="border border-border/80 bg-card/70 backdrop-blur-md shadow-sm relative overflow-hidden shrink-0"
           >
-            {/* Subtle glow accent */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 blur-3xl pointer-events-none rounded-full" />
-
             <CardHeader className="pb-3">
               <div className="mb-2.5">
                 <GoogleCalendarIcon className="w-6 h-6" />
