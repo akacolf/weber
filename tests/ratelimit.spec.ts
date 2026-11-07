@@ -50,13 +50,13 @@ test.describe('Contact Form Rate Limiting', () => {
         status: 429,
         contentType: 'application/json',
         headers: {
-          'Retry-After': '600',
+          'Retry-After': '3600',
           'X-RateLimit-Limit': '5',
           'X-RateLimit-Remaining': '0',
         },
         body: JSON.stringify({
-          error: 'Too many requests. Please wait 10 minutes before submitting another message.',
-          retryAfter: 600,
+          error: 'Too many requests. Please wait 1 hour before submitting another message.',
+          retryAfter: 3600,
         }),
       });
     });

@@ -73,7 +73,7 @@ export function checkRateLimit(
   const envWindowMs = process.env.RATE_LIMIT_CONTACT_WINDOW_MS
     ? Number(process.env.RATE_LIMIT_CONTACT_WINDOW_MS)
     : undefined;
-  const windowMs = options.windowMs ?? envWindowMs ?? 10 * 60 * 1000; // Default: 10 minutes
+  const windowMs = options.windowMs ?? envWindowMs ?? 60 * 60 * 1000; // Default: 1 hour (3600000 ms)
 
   cleanupStore(windowMs);
 

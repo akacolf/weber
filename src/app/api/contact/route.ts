@@ -15,11 +15,15 @@ export async function POST(request: Request) {
     };
 
     if (!rateLimitResult.success) {
-      const waitMinutes = Math.ceil((rateLimitResult.retryAfter || 60) / 60);
+      const waitSeconds = rateLimitResult.retryAfter || 60;
+      const waitHours = Math.ceil(waitSeconds / 3600);
+      const waitMinutes = Math.ceil(waitSeconds / 60);
       const timeMessage =
-        waitMinutes > 1
-          ? `${waitMinutes} minutes`
-          : `${rateLimitResult.retryAfter || 60} seconds`;
+        waitSeconds >= 3600
+          ? `${waitHours} hour${waitHours > 1 ? "s" : ""}`
+          : waitMinutes > 1
+            ? `${waitMinutes} minutes`
+            : `${waitSeconds} seconds`;
 
       return NextResponse.json(
         {
