@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
@@ -33,6 +33,11 @@ export const NAV_LINKS = [
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    setIsDropdownOpen(false);
+  }, [pathname]);
 
   const isAboutActive = pathname === "/about" || pathname === "/constitution";
 
@@ -50,7 +55,7 @@ export default function Navbar() {
           className="hidden md:flex items-center justify-center gap-8 text-sm font-medium"
         >
           {/* About me Dropdown Menu */}
-          <DropdownMenu>
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger
               className={cn(
                 "group inline-flex items-center gap-1.5 transition-colors select-none cursor-pointer outline-none rounded-md px-2 py-1 text-sm font-medium",
@@ -66,6 +71,7 @@ export default function Navbar() {
             <DropdownMenuContent align="start" className="w-56 p-1.5 shadow-xl border-border/80">
               <DropdownMenuGroup>
                 <DropdownMenuItem
+                  onClick={() => setIsDropdownOpen(false)}
                   className={cn(
                     "px-3 py-2 text-xs font-medium cursor-pointer rounded-md transition-colors",
                     pathname === "/about"
@@ -83,6 +89,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
+                  onClick={() => setIsDropdownOpen(false)}
                   className={cn(
                     "px-3 py-2 text-xs font-medium cursor-pointer rounded-md transition-colors",
                     pathname === "/constitution"

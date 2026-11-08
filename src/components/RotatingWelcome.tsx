@@ -67,17 +67,19 @@ interface AnimatedGreetingWordProps {
   greeting: GreetingItem;
   shouldReduceMotion: boolean | null;
   isIntroActive: boolean;
+  isTimerPaused: boolean;
 }
 
 function AnimatedGreetingWord({
   greeting,
   shouldReduceMotion,
   isIntroActive,
+  isTimerPaused,
 }: AnimatedGreetingWordProps) {
   const isPresent = useIsPresent();
 
-  // If user prefers reduced motion, crossfade opacity smoothly
-  if (shouldReduceMotion) {
+  // If user prefers reduced motion or testing timer is paused, crossfade or render instantly
+  if (shouldReduceMotion || isTimerPaused) {
     return (
       <motion.span
         suppressHydrationWarning
@@ -87,7 +89,7 @@ function AnimatedGreetingWord({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: isTimerPaused ? 0 : 0.2 }}
         className="text-lime-600 dark:text-lime-400 font-medium inline-block whitespace-nowrap px-1"
       >
         {greeting.word}
@@ -298,12 +300,16 @@ export default function RotatingWelcome() {
           animate={{
             width: targetWidth ? `${targetWidth}px` : "auto",
           }}
-          transition={{
-            width: mounted
-              ? { duration: 0.32, ease: [0.16, 1, 0.3, 1] }
-              : { duration: 0 },
-            scale: { type: "spring", stiffness: 300, damping: 22 },
-          }}
+          transition={
+            isTimerPaused
+              ? { duration: 0 }
+              : {
+                  width: mounted
+                    ? { duration: 0.32, ease: [0.16, 1, 0.3, 1] }
+                    : { duration: 0 },
+                  scale: { type: "spring", stiffness: 300, damping: 22 },
+                }
+          }
           className="relative inline-flex items-center justify-start align-baseline pt-2 pb-6 -mb-6 cursor-pointer select-none"
           style={{
             verticalAlign: "baseline",
@@ -317,6 +323,7 @@ export default function RotatingWelcome() {
               greeting={GREETINGS[index]}
               shouldReduceMotion={shouldReduceMotion}
               isIntroActive={isIntroActive}
+              isTimerPaused={isTimerPaused}
             />
           </AnimatePresence>
 
@@ -344,11 +351,15 @@ export default function RotatingWelcome() {
               ? { opacity: 0, y: 8, filter: "blur(4px)" }
               : { opacity: 1, y: 0, filter: "blur(0px)" }
           }
-          transition={{
-            duration: 0.8,
-            ease: [0.16, 1, 0.3, 1],
-            delay: shouldReduceMotion ? 0 : 0.08,
-          }}
+          transition={
+            isTimerPaused
+              ? { duration: 0 }
+              : {
+                  duration: 0.8,
+                  ease: [0.16, 1, 0.3, 1],
+                  delay: shouldReduceMotion ? 0 : 0.08,
+                }
+          }
           className="text-foreground inline-block align-baseline whitespace-normal"
         >
           to my website.

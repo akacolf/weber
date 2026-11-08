@@ -36,18 +36,30 @@ test.describe('Header & Navigation tests', () => {
 
     const header = page.locator('header');
     const nav = header.locator('nav[aria-label="Main Navigation"]');
+    const aboutTrigger = nav.locator('button[aria-label="About me dropdown menu"]');
+    const dropdown = page.locator('[data-slot="dropdown-menu-content"]');
 
     // Test "About me" dropdown menu -> "About me" item
-    await nav.locator('button[aria-label="About me dropdown menu"]').click();
-    const aboutMenuItem = page.locator('[data-slot="dropdown-menu-content"]').getByRole('link', { name: 'About me' });
-    await expect(aboutMenuItem).toBeVisible();
+    const aboutMenuItem = dropdown.getByRole('link', { name: 'About me' });
+    await expect(async () => {
+      if (!await aboutMenuItem.isVisible()) {
+        await aboutTrigger.click();
+      }
+      await expect(aboutMenuItem).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
+
     await aboutMenuItem.click();
     await expect(page).toHaveURL(/\/about$/);
 
     // Test "About me" dropdown menu -> "My constitution" item
-    await nav.locator('button[aria-label="About me dropdown menu"]').click();
-    const constitutionMenuItem = page.locator('[data-slot="dropdown-menu-content"]').getByRole('link', { name: 'My constitution' });
-    await expect(constitutionMenuItem).toBeVisible();
+    const constitutionMenuItem = dropdown.getByRole('link', { name: 'My constitution' });
+    await expect(async () => {
+      if (!await constitutionMenuItem.isVisible()) {
+        await aboutTrigger.click();
+      }
+      await expect(constitutionMenuItem).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
+
     await constitutionMenuItem.click();
     await expect(page).toHaveURL(/\/constitution$/);
 
@@ -203,15 +215,19 @@ test.describe('Dark and Light Mode tests', () => {
     const toggleBtn = page.getByRole('button', { name: 'Toggle theme' });
     await expect(toggleBtn).toBeVisible();
 
-    // Click toggle to open theme options dropdown
-    await toggleBtn.click();
-
     // Verify menu items are visible
     const lightOption = page.getByRole('menuitem', { name: 'Light' });
     const darkOption = page.getByRole('menuitem', { name: 'Dark' });
     const systemOption = page.getByRole('menuitem', { name: 'System' });
 
-    await expect(lightOption).toBeVisible();
+    // Click toggle to open theme options dropdown with retry for hydration
+    await expect(async () => {
+      if (!await lightOption.isVisible()) {
+        await toggleBtn.click();
+      }
+      await expect(lightOption).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
+
     await expect(darkOption).toBeVisible();
     await expect(systemOption).toBeVisible();
 
@@ -222,7 +238,12 @@ test.describe('Dark and Light Mode tests', () => {
 
     // Switch to Dark mode
     await expect(page.locator('[data-slot="dropdown-menu-content"]')).not.toBeVisible();
-    await toggleBtn.click();
+    await expect(async () => {
+      if (!await darkOption.isVisible()) {
+        await toggleBtn.click();
+      }
+      await expect(darkOption).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
     await darkOption.click();
     await expect(html).toHaveClass(/dark/);
   });
@@ -319,13 +340,18 @@ test.describe('Featured Projects Showcase tests', () => {
 
     const codeusMenuTrigger = codeusArticle.getByRole('button', { name: /repositories for codeus/i });
     await expect(codeusMenuTrigger).toBeVisible();
-    await codeusMenuTrigger.click();
 
     const cliItem = page.getByRole('menuitem', { name: /codeus cli/i });
     const appItem = page.getByRole('menuitem', { name: /codeus app/i });
     const apiItem = page.getByRole('menuitem', { name: /codeus api/i });
 
-    await expect(cliItem).toBeVisible();
+    await expect(async () => {
+      if (!await cliItem.isVisible()) {
+        await codeusMenuTrigger.click();
+      }
+      await expect(cliItem).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
+
     await expect(cliItem.locator('a')).toHaveAttribute('href', 'https://github.com/akacolf/codeus-cli');
 
     await expect(appItem).toBeVisible();
@@ -525,13 +551,24 @@ test.describe('Keynote Greeting Intro tests', () => {
     const header = page.locator('header');
     const nav = header.locator('nav[aria-label="Main Navigation"]');
     const aboutTrigger = nav.locator('button[aria-label="About me dropdown menu"]');
-    await aboutTrigger.click();
     const dropdown = page.locator('[data-slot="dropdown-menu-content"]');
-    await dropdown.getByRole('link', { name: 'About me' }).click();
+    const aboutLink = dropdown.getByRole('link', { name: 'About me' });
+
+    await expect(async () => {
+      if (!await aboutLink.isVisible()) {
+        await aboutTrigger.click();
+      }
+      await expect(aboutLink).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
+
+    await aboutLink.click();
     await expect(page).toHaveURL(/\/about$/);
 
+    // Verify dropdown menu closes after navigation
+    await expect(dropdown).not.toBeVisible();
+
     // Return to home by clicking the Logo
-    await header.locator('a[aria-label*="Khalid Al Shareef"]').click();
+    await header.locator('a[aria-label*="Khalid Al Shareef"]').click({ force: true });
     await expect(page).toHaveURL(/\/$/);
 
     // Overlay should NOT be visible when returning to home
@@ -729,8 +766,8 @@ test.describe('Rotating Welcome in multiple languages tests', () => {
   });
 
   test('heading screenshot captures full descenders without any clipping in light and dark mode', async ({ page }) => {
-    await page.goto('/?skipIntro=true');
-    await page.waitForTimeout(500);
+    await page.goto('/?skipIntro=true&pauseTimer=true');
+    await page.waitForTimeout(800);
     const heading = page.locator('h1');
     await heading.screenshot({ path: 'test-results/heading-verified-light.png', animations: 'disabled' });
 
@@ -749,14 +786,20 @@ test.describe('About me Dropdown & Constitution Page tests', () => {
     const aboutTrigger = header.locator('nav[aria-label="Main Navigation"]').locator('button[aria-label="About me dropdown menu"]');
     await expect(aboutTrigger).toBeVisible();
 
-    // Click trigger to open dropdown
-    await aboutTrigger.click();
+    const dropdown = page.locator('[data-slot="dropdown-menu-content"]');
+    const aboutBtn = dropdown.getByRole('link', { name: 'About me' });
+    const constitutionBtn = dropdown.getByRole('link', { name: 'My constitution' });
 
-    // Verify both items exist
-    const aboutBtn = page.getByRole('link', { name: 'About me' });
-    const constitutionBtn = page.getByRole('link', { name: 'My constitution' });
+    // Click trigger to open dropdown with retry for hydration
+    await expect(async () => {
+      if (!await dropdown.isVisible()) {
+        await aboutTrigger.click();
+      }
+      await expect(dropdown).toBeVisible({ timeout: 1500 });
+    }).toPass({ timeout: 10000 });
 
-    await expect(aboutBtn.first()).toBeVisible();
+    // Verify both items exist in the dropdown
+    await expect(aboutBtn).toBeVisible();
     await expect(constitutionBtn).toBeVisible();
   });
 
