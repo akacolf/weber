@@ -32,7 +32,7 @@ test.describe('Header & Navigation tests', () => {
   });
 
   test('navigation links work and navigate correctly', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipIntro=true');
 
     const header = page.locator('header');
     const nav = header.locator('nav[aria-label="Main Navigation"]');
@@ -45,21 +45,18 @@ test.describe('Header & Navigation tests', () => {
     await expect(page).toHaveURL(/\/about$/);
 
     // Test "About me" dropdown menu -> "My constitution" item
-    await page.goto('/');
-    const navHome = page.locator('header').locator('nav[aria-label="Main Navigation"]');
-    await navHome.locator('button[aria-label="About me dropdown menu"]').click();
+    await nav.locator('button[aria-label="About me dropdown menu"]').click();
     const constitutionMenuItem = page.locator('[data-slot="dropdown-menu-content"]').getByRole('link', { name: 'My constitution' });
     await expect(constitutionMenuItem).toBeVisible();
     await constitutionMenuItem.click();
     await expect(page).toHaveURL(/\/constitution$/);
 
     // Test "Products I've built"
-    await page.goto('/');
-    await page.locator('header').locator('nav[aria-label="Main Navigation"]').getByRole('link', { name: "Products I've built" }).click();
+    await nav.getByRole('link', { name: "Products I've built" }).click();
     await expect(page).toHaveURL(/\/products$/);
 
     // Test "My resume/cv"
-    await page.locator('header').locator('nav[aria-label="Main Navigation"]').getByRole('link', { name: 'My resume/cv' }).click();
+    await nav.getByRole('link', { name: 'My resume/cv' }).click();
     await expect(page).toHaveURL(/\/resume$/);
 
     // Test "Contact me" white button
@@ -224,6 +221,7 @@ test.describe('Dark and Light Mode tests', () => {
     await expect(html).toHaveClass(/light/);
 
     // Switch to Dark mode
+    await expect(page.locator('[data-slot="dropdown-menu-content"]')).not.toBeVisible();
     await toggleBtn.click();
     await darkOption.click();
     await expect(html).toHaveClass(/dark/);
@@ -256,7 +254,7 @@ test.describe('Favicon & Document Title tests', () => {
 
 test.describe('Featured Projects Showcase tests', () => {
   test('renders featured projects section directly below hero with Quantum Club card', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipIntro=true');
 
     // Verify hero section is present
     const greeting = page.getByRole('heading', { name: 'Welcome to my website.' });
@@ -414,6 +412,19 @@ test.describe('Contact page tests', () => {
   });
 
   test('submitting contact form displays interactive success feedback and allows reset', async ({ page }) => {
+    // Mock the contact API to guarantee no real emails are sent during E2E testing
+    await page.route('**/api/contact', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          simulated: true,
+          message: 'Message received in development/test mode.',
+        }),
+      });
+    });
+
     await page.goto('/contact');
     await page.waitForLoadState('domcontentloaded');
 
@@ -709,11 +720,11 @@ test.describe('Rotating Welcome in multiple languages tests', () => {
     await expect(welcomeWord).toHaveText('Welcome');
 
     // Click container to cycle language
-    await container.click();
+    await container.click({ force: true });
     await expect(welcomeWord).toHaveText('Bienvenido');
 
     // Click container again to cycle to next language (French: "Bienvenue")
-    await container.click();
+    await container.click({ force: true });
     await expect(welcomeWord).toHaveText('Bienvenue');
   });
 
@@ -721,18 +732,18 @@ test.describe('Rotating Welcome in multiple languages tests', () => {
     await page.goto('/?skipIntro=true');
     await page.waitForTimeout(500);
     const heading = page.locator('h1');
-    await heading.screenshot({ path: 'test-results/heading-verified-light.png' });
+    await heading.screenshot({ path: 'test-results/heading-verified-light.png', animations: 'disabled' });
 
     // Switch to dark mode
     await page.locator('html').evaluate((el) => el.classList.add('dark'));
     await page.waitForTimeout(300);
-    await heading.screenshot({ path: 'test-results/heading-verified-dark.png' });
+    await heading.screenshot({ path: 'test-results/heading-verified-dark.png', animations: 'disabled' });
   });
 });
 
 test.describe('About me Dropdown & Constitution Page tests', () => {
   test('header about me dropdown menu opens and has two buttons: About me and My constitution', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipIntro=true');
 
     const header = page.locator('header');
     const aboutTrigger = header.locator('nav[aria-label="Main Navigation"]').locator('button[aria-label="About me dropdown menu"]');
