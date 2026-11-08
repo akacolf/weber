@@ -93,9 +93,11 @@ const TOKENS: Token[] = [
   { text: ": [", className: "text-neutral-400" },
   { text: '"High-Performance Web"', className: "text-emerald-300" },
   { text: ", ", className: "text-neutral-400" },
-  { text: '"Design Systems"', className: "text-emerald-300" },
+  { text: '"LLMs"', className: "text-emerald-300" },
   { text: ", ", className: "text-neutral-400" },
-  { text: '"Architecture"', className: "text-emerald-300" },
+  { text: '"ML"', className: "text-emerald-300" },
+  { text: ", ", className: "text-neutral-400" },
+  { text: '"Agentic Systems"', className: "text-emerald-300" },
   { text: "],\n", className: "text-neutral-400", pause: 160 },
 
   // Line 13
@@ -270,7 +272,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
             >
               {/* Gray file icon */}
               <FileCode className="w-3.5 h-3.5 text-neutral-400" />
-              <span>developer.ts</span>
+              <span>colf.ts</span>
             </button>
 
             <button
@@ -324,7 +326,7 @@ export default function CodeTerminal({ className }: CodeTerminalProps) {
           <ChevronRight className="w-3 h-3 text-neutral-600" />
           <span className="text-neutral-500">src</span>
           <ChevronRight className="w-3 h-3 text-neutral-600" />
-          <span className="text-neutral-200 font-medium">developer.ts</span>
+          <span className="text-neutral-200 font-medium">colf.ts</span>
         </div>
       </div>
 

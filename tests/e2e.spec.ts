@@ -21,7 +21,7 @@ test.describe('Header & Navigation tests', () => {
 
     // Verify center desktop navigation links
     const nav = header.locator('nav[aria-label="Main Navigation"]');
-    await expect(nav.getByRole('link', { name: 'About me' })).toBeVisible();
+    await expect(nav.locator('button[aria-label="About me dropdown menu"]')).toBeVisible();
     await expect(nav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
 
@@ -37,16 +37,29 @@ test.describe('Header & Navigation tests', () => {
     const header = page.locator('header');
     const nav = header.locator('nav[aria-label="Main Navigation"]');
 
-    // Test "About me"
-    await nav.getByRole('link', { name: 'About me' }).click();
+    // Test "About me" dropdown menu -> "About me" item
+    await nav.locator('button[aria-label="About me dropdown menu"]').click();
+    const aboutMenuItem = page.locator('[data-slot="dropdown-menu-content"]').getByRole('link', { name: 'About me' });
+    await expect(aboutMenuItem).toBeVisible();
+    await aboutMenuItem.click();
     await expect(page).toHaveURL(/\/about$/);
 
+    // Test "About me" dropdown menu -> "My constitution" item
+    await page.goto('/');
+    const navHome = page.locator('header').locator('nav[aria-label="Main Navigation"]');
+    await navHome.locator('button[aria-label="About me dropdown menu"]').click();
+    const constitutionMenuItem = page.locator('[data-slot="dropdown-menu-content"]').getByRole('link', { name: 'My constitution' });
+    await expect(constitutionMenuItem).toBeVisible();
+    await constitutionMenuItem.click();
+    await expect(page).toHaveURL(/\/constitution$/);
+
     // Test "Products I've built"
-    await nav.getByRole('link', { name: "Products I've built" }).click();
+    await page.goto('/');
+    await page.locator('header').locator('nav[aria-label="Main Navigation"]').getByRole('link', { name: "Products I've built" }).click();
     await expect(page).toHaveURL(/\/products$/);
 
     // Test "My resume/cv"
-    await nav.getByRole('link', { name: 'My resume/cv' }).click();
+    await page.locator('header').locator('nav[aria-label="Main Navigation"]').getByRole('link', { name: 'My resume/cv' }).click();
     await expect(page).toHaveURL(/\/resume$/);
 
     // Test "Contact me" white button
@@ -74,6 +87,7 @@ test.describe('Header & Navigation tests', () => {
     const mobileNav = page.locator('nav[aria-label="Mobile Navigation"]');
     await expect(mobileNav).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: 'About me' })).toBeVisible();
+    await expect(mobileNav.getByRole('link', { name: 'My constitution' })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: 'Contact me' })).toBeVisible();
@@ -324,15 +338,12 @@ test.describe('Featured Projects Showcase tests', () => {
   });
 
   test('featured projects link to products archive', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipIntro=true');
 
     const projectsSection = page.locator('section#projects');
     const viewAllBtn = projectsSection.getByRole('link', { name: 'View all products' });
     await expect(viewAllBtn).toBeVisible();
-    await Promise.all([
-      page.waitForURL(/\/products$/),
-      viewAllBtn.click(),
-    ]);
+    await viewAllBtn.click();
     await expect(page).toHaveURL(/\/products$/);
   });
 });
@@ -502,7 +513,10 @@ test.describe('Keynote Greeting Intro tests', () => {
     // Navigate to "About me"
     const header = page.locator('header');
     const nav = header.locator('nav[aria-label="Main Navigation"]');
-    await nav.getByRole('link', { name: 'About me' }).click();
+    const aboutTrigger = nav.locator('button[aria-label="About me dropdown menu"]');
+    await aboutTrigger.click();
+    const dropdown = page.locator('[data-slot="dropdown-menu-content"]');
+    await dropdown.getByRole('link', { name: 'About me' }).click();
     await expect(page).toHaveURL(/\/about$/);
 
     // Return to home by clicking the Logo
@@ -715,6 +729,52 @@ test.describe('Rotating Welcome in multiple languages tests', () => {
     await heading.screenshot({ path: 'test-results/heading-verified-dark.png' });
   });
 });
+
+test.describe('About me Dropdown & Constitution Page tests', () => {
+  test('header about me dropdown menu opens and has two buttons: About me and My constitution', async ({ page }) => {
+    await page.goto('/');
+
+    const header = page.locator('header');
+    const aboutTrigger = header.locator('nav[aria-label="Main Navigation"]').locator('button[aria-label="About me dropdown menu"]');
+    await expect(aboutTrigger).toBeVisible();
+
+    // Click trigger to open dropdown
+    await aboutTrigger.click();
+
+    // Verify both items exist
+    const aboutBtn = page.getByRole('link', { name: 'About me' });
+    const constitutionBtn = page.getByRole('link', { name: 'My constitution' });
+
+    await expect(aboutBtn.first()).toBeVisible();
+    await expect(constitutionBtn).toBeVisible();
+  });
+
+  test('constitution page renders operating code, articles, and heuristics', async ({ page }) => {
+    await page.goto('/constitution');
+
+    // Verify heading
+    const title = page.getByRole('heading', { name: 'My Constitution', exact: true });
+    await expect(title).toBeVisible();
+
+    // Verify key articles
+    await expect(page.getByRole('heading', { name: 'Extreme Agency & Relentless Shipping' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Relentless Craft & Micro-Precision' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'First-Principles Engineering' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'AI-Native & Compound Leverage' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sovereignty & Open Ecosystems' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'The Long Game & Radical Integrity' })).toBeVisible();
+  });
+
+  test('about me page renders bio, founder info, and background story', async ({ page }) => {
+    await page.goto('/about');
+
+    await expect(page.getByRole('heading', { name: /Hey, I'm Khalid Al Shareef/i })).toBeVisible();
+    await expect(page.getByText('Anaxonic', { exact: false })).toBeVisible();
+    await expect(page.getByText('Electrical & Electronics Engineering', { exact: false })).toBeVisible();
+    await expect(page.getByText('engineered a lot of projects', { exact: false })).toBeVisible();
+  });
+});
+
 
 
 
