@@ -243,7 +243,7 @@ export const RESUME_DATA: ResumeData = {
   languages: [
     { language: "English", proficiency: "Native" },
     { language: "Turkish", proficiency: "Bilingual" },
-    { language: "Arabic", proficiency: "Advanced" },
+    { language: "Arabic", proficiency: "Trilingual" },
     { language: "German", proficiency: "A1 (Elementary)" },
     { language: "French", proficiency: "A1 (Elementary)" },
   ],
