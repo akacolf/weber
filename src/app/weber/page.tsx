@@ -4,7 +4,7 @@ import WeberChat from "@/components/WeberChat";
 export const metadata: Metadata = {
   title: "Weber",
   description:
-    "Interactive model serving interface for Weber (John Sakura 1.0) — Anaxonic's specialized AI assistant trained for onchain developers and blockchain engineers.",
+    "Interactive model serving interface for Weber — a specialized AI model trained for general purpose chatting.",
 };
 
 export default function WeberPage() {

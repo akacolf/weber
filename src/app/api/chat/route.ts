@@ -6,10 +6,9 @@ interface ChatMessage {
 }
 
 const SYSTEM_PROMPT =
-  "You are Weber (John Sakura 1.0), an AI assistant trained by Anaxonic to help onchain developers " +
-  "and blockchain engineers build faster. You are concise, technically precise, and specialized in " +
-  "smart contracts (FunC, Tact, Solidity), TON blockchain architecture, DeFi mechanics, and decentralized systems. " +
-  "Answer directly and accurately. Say when you are unsure rather than guessing.";
+  "You are Weber, a specialized AI model trained for general purpose chatting and conversation. " +
+  "You are helpful, thoughtful, concise, and engaging. " +
+  "Answer directly, naturally, and accurately. Say when you are unsure rather than guessing.";
 
 /**
  * Fallback knowledge responder when local PyTorch/FastAPI backend is offline
@@ -36,7 +35,7 @@ npx blueprint run
 \`\`\`
 Select your network (testnet or mainnet), choose the deployer (Tonkeeper / mnemonic), and sign the init transaction with Toncoin.
 
-*Tip: Running \`python -m anaxonic.serve\` connects you directly to the live Anaxonic neural weights.*`;
+*Tip: Running \`python -m anaxonic.serve\` connects you directly to the live model weights.*`;
   }
 
   if (p.includes("bonding curve") || p.includes("defi")) {
@@ -76,38 +75,40 @@ Tokens are minted upon deposit of reserve currency (e.g., TON or ETH) according 
 - \`mode = 128\`: Transfer entire balance of the contract (destroys contract if combined with mode 32).`;
   }
 
-  if (p.includes("anaxonic") || p.includes("model") || p.includes("architecture") || p.includes("sakura")) {
-    return `**Weber (John Sakura 1.0)** is Anaxonic's specialized model trained on deep onchain data, smart contract source code, security vulnerabilities, and DeFi mathematical specifications.
+  if (p.includes("weber") || p.includes("model") || p.includes("architecture")) {
+    return `**Weber** is a specialized AI model trained for general purpose chatting, natural conversation, and reasoning.
 
 ### Architecture Highlights:
-- **Decoder-Only Transformer** with rotary position embeddings (RoPE).
-- **Domain Fine-Tuning**: Supervised fine-tuning on FunC, Tact, Solidity, EVM/TVM assembly, and crypto-economic protocols.
-- **FastAPI / vLLM Serving**: Exposes standard OpenAI-compatible \`/v1/chat/completions\` streaming endpoints via \`src/anaxonic/serve.py\`.
-- **Memory & Inference Modes**: Hybrid generative retrieval with verified code memory stacks for zero-hallucination smart contract deployment instructions.`;
+- **Decoder-Only Transformer** with rotary position embeddings (RoPE) and byte-level deterministic tokenization.
+- **Supervised Fine-Tuning**: Trained on curated conversational datasets and multi-turn instruction-following corpora.
+- **Continuous Training**: Active training loop with gradient accumulation, response masking, quality gates, and checkpoint evaluations.
+- **FastAPI / vLLM Serving**: Exposes standard OpenAI-compatible \`/v1/chat/completions\` streaming endpoints.
+- **Open Source**: Full model code and training pipelines are published at [github.com/akacolf/anaxonic-model](https://github.com/akacolf/anaxonic-model).`;
   }
 
-  return `I am **Weber (John Sakura 1.0)**, developed by **Anaxonic** for onchain developers and decentralized infrastructure engineers.
+  return `I am **Weber**, a specialized AI model trained for general purpose chatting.
 
 You asked: "${userPrompt}"
 
 I can help you with:
-- **Smart Contract Development** (FunC, Tact, Solidity, Rust/Anchor)
-- **TON & EVM Blockchain Architecture**
-- **Tokenomics & Bonding Curve Design**
-- **Contract Security Auditing & Reentrancy Analysis**
+- **Open-Ended Conversation & Brainstorming**
+- **Answering Questions & Explaining Concepts**
+- **Writing, Creative Thinking & Drafting**
+- **Problem Solving & Step-by-Step Reasoning**
 
-*(Backend notice: You are currently connected to the edge serving proxy. To run with local GPU weights, launch \`python -m anaxonic.serve\` from the \`akacolf/anaxonic-model\` repository).*`;
+*(Backend notice: You are currently connected to the edge serving proxy. To run with local GPU weights, launch \`python -m anaxonic.train\` or serving via the repository at [github.com/akacolf/anaxonic-model](https://github.com/akacolf/anaxonic-model)).*`;
 }
 
 /**
- * GET: Check connection health to anaxonic-model
+ * GET: Check connection health to Weber model server
  */
 export async function GET() {
   const baseURL =
+    process.env.WEBER_MODEL_URL ||
     process.env.ANAXONIC_MODEL_URL ||
     process.env.OPENAI_BASE_URL ||
     "http://localhost:8000/v1";
-  const model = process.env.MODEL_NAME || "john-sakura-1.0";
+  const model = process.env.MODEL_NAME || "weber";
 
   let isConnected = false;
   let responseTime = 0;
@@ -165,14 +166,16 @@ export async function POST(req: NextRequest) {
     const userText = lastUserMessage?.content || "";
 
     const baseURL =
+      process.env.WEBER_MODEL_URL ||
       process.env.ANAXONIC_MODEL_URL ||
       process.env.OPENAI_BASE_URL ||
       "http://localhost:8000/v1";
     const apiKey =
+      process.env.WEBER_MODEL_API_KEY ||
       process.env.ANAXONIC_MODEL_API_KEY ||
       process.env.OPENAI_API_KEY ||
       "none";
-    const model = process.env.MODEL_NAME || "john-sakura-1.0";
+    const model = process.env.MODEL_NAME || "weber";
 
     // Attempt to query the backend server
     let backendStream: ReadableStream<Uint8Array> | null = null;

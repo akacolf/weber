@@ -682,9 +682,9 @@ export default function WeberChat() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold text-xs text-foreground">Weber</span>
+                  <span className="truncate font-semibold text-xs text-foreground">Jane Doe</span>
                   <span className="truncate text-[11px] text-muted-foreground font-normal">
-                    johndoe@gmail.com
+                    janedoe@gmail.com
                   </span>
                 </div>
               </SidebarMenuButton>

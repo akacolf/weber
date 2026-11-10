@@ -49,8 +49,8 @@ export interface TimelineProduct {
   description: string[];
   keyHighlights: string[];
   techStack: string[];
-  imageSrc: string;
-  imageAlt: string;
+  imageSrc?: string;
+  imageAlt?: string;
   githubUrl?: string;
   links?: { label: string; url: string }[];
   status: "active" | "completed" | "upcoming";
@@ -58,6 +58,34 @@ export interface TimelineProduct {
 }
 
 export const PRODUCTS_TIMELINE: TimelineProduct[] = [
+  {
+    id: "weber",
+    title: "Weber",
+    year: 2026,
+    date: "2026-06",
+    dateLabel: "2026 • June 2026",
+    milestone: "AI Model • In Training",
+    category: "ai-agents",
+    categoryLabel: "AI & Agents",
+    badges: ["AI Model", "LLM", "In Training", "Open Source"],
+    description: [
+      "A specialized AI model trained for general purpose chatting, conversational reasoning, and natural language understanding.",
+      "Built with a custom decoder-only transformer architecture, deterministic byte-level tokenizer, streaming dataset pipelines, and multi-turn conversational instruction tuning. Directly powers the Weber interactive chat interface.",
+    ],
+    keyHighlights: [
+      "Custom decoder-only transformer with rotary position embeddings (RoPE)",
+      "Supervised instruction tuning on conversational datasets and open dialogue",
+      "Integrated checkpointing, quality gates, evaluation benchmarks & OpenAI-compatible serving",
+      "Interactive model serving chat interface accessible directly on the portfolio",
+    ],
+    techStack: ["Python", "PyTorch", "Transformers", "CUDA", "FastAPI", "Docker"],
+    links: [
+      { label: "Model Repository", url: "https://github.com/akacolf/anaxonic-model" },
+      { label: "Try Weber AI", url: "/weber" },
+    ],
+    status: "active",
+    award: "In Active Training",
+  },
   {
     id: "codeus",
     title: "Codeus",
@@ -406,20 +434,22 @@ export default function ProductsTimeline() {
                     {/* Product Card Container */}
                     <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs p-5 sm:p-6 transition-all duration-300 hover:border-foreground/20 hover:shadow-md mt-2">
                       {/* Banner Image Preview */}
-                      <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-black mb-5 group/image">
-                        <Image
-                          src={product.imageSrc}
-                          alt={product.imageAlt}
-                          fill
-                          className={cn(
-                            "transition-opacity duration-300",
-                            product.id === "quantum-club"
-                              ? "object-contain p-8 sm:p-12"
-                              : "object-contain"
-                          )}
-                          sizes="(max-width: 768px) 100vw, 768px"
-                        />
-                      </div>
+                      {product.imageSrc ? (
+                        <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/60 bg-black mb-5 group/image">
+                          <Image
+                            src={product.imageSrc}
+                            alt={product.imageAlt || product.title}
+                            fill
+                            className={cn(
+                              "transition-opacity duration-300",
+                              product.id === "quantum-club"
+                                ? "object-contain p-8 sm:p-12"
+                                : "object-contain"
+                            )}
+                            sizes="(max-width: 768px) 100vw, 768px"
+                          />
+                        </div>
+                      ) : null}
 
                       {/* Product Narrative */}
                       <TimelineDescription className="space-y-2 mb-4">
