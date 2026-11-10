@@ -827,6 +827,74 @@ test.describe('About me Dropdown & Constitution Page tests', () => {
   });
 });
 
+test.describe('Resume & CV Page tests (Khalid Al Shareef PDF-based)', () => {
+  test('resume page renders full professional experience, projects, skills, and PDF download', async ({ page }) => {
+    await page.goto('/resume');
+
+    // Header info
+    await expect(page.getByRole('heading', { name: 'KHALID AL SHAREEF' })).toBeVisible();
+    await expect(page.getByText('AI Engineer & Full-Stack Developer', { exact: true })).toBeVisible();
+    await expect(page.getByText('Ex. Founder and Lead Engineer | Anaxonic')).toBeVisible();
+    await expect(page.getByAltText('KHALID AL SHAREEF')).toBeVisible();
+
+    // Contact info
+    await expect(page.getByText('Gaziantep, Turkey')).toBeVisible();
+    await expect(page.getByText('khalidthenoble@gmail.com')).toBeVisible();
+    await expect(page.getByText('+90 501 525 00 45')).toBeVisible();
+
+    // Work Experience
+    await expect(page.getByText('Anaxonic | Founder & Lead Engineer')).toBeVisible();
+    await expect(page.getByText('Enbis Automation | Automation Systems Engineer Intern')).toBeVisible();
+    await expect(page.getByText('Living It English Cafe | Teacher')).toBeVisible();
+
+    // Featured Projects from resume
+    await expect(page.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).toBeVisible();
+    await expect(page.getByText('Shipped the product to 3000 users', { exact: false })).toBeVisible();
+
+    // Education
+    await expect(page.getByText('University of Gaziantep, Gaziantep, TR')).toBeVisible();
+    await expect(page.getByText('Applied Linear Algebra')).toBeVisible();
+
+    // Certifications & Extracurricular
+    await expect(page.getByText('Practical Automation and PLC Training')).toBeVisible();
+    await expect(page.getByText('Odaksan Engineering')).toBeVisible();
+    await expect(page.getByText('CTF 3 & CTF 4 Hackathon Competitions')).toBeVisible();
+
+    // Download PDF link
+    const downloadBtn = page.getByRole('link', { name: /Download PDF/i });
+    await expect(downloadBtn).toBeVisible();
+    await expect(downloadBtn).toHaveAttribute('href', '/resume_KhalidAlShareef.pdf');
+  });
+
+  test('resume page has functional Print / Save action and does not reveal code (no resume.ts)', async ({ page }) => {
+    await page.goto('/resume');
+
+    // Verify resume document header
+    await expect(page.getByRole('heading', { name: 'KHALID AL SHAREEF' })).toBeVisible();
+
+    // Verify resume.ts is NOT present (no code revealed)
+    await expect(page.getByRole('button', { name: /resume\.ts/i })).not.toBeVisible();
+    await expect(page.getByText('khalid-alshareef.resume.ts')).not.toBeVisible();
+    await expect(page.getByText('export const khalidAlShareef')).not.toBeVisible();
+
+    // Verify Print / Save button exists and is clickable
+    const printBtn = page.getByRole('button', { name: /Print \/ Save/i });
+    await expect(printBtn).toBeVisible();
+
+    // Verify window.print is called on click
+    await page.evaluate(() => {
+      (window as unknown as { __printCalled: boolean }).__printCalled = false;
+      window.print = () => {
+        (window as unknown as { __printCalled: boolean }).__printCalled = true;
+      };
+    });
+    await printBtn.click();
+    const wasCalled = await page.evaluate(() => (window as unknown as { __printCalled: boolean }).__printCalled);
+    expect(wasCalled).toBe(true);
+  });
+});
+
 
 
 

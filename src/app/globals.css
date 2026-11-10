@@ -139,3 +139,56 @@
   }
 }
 
+@media print {
+  @page {
+    size: auto;
+    margin: 10mm 12mm;
+  }
+
+  /* Hide navigation, footer, action bars, and decor during print */
+  header,
+  footer,
+  nav,
+  .print-hidden,
+  [data-print-hidden="true"] {
+    display: none !important;
+  }
+
+  /* Force pure light mode styling for paper */
+  html,
+  body,
+  :root,
+  .dark {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    color-scheme: light !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}
+

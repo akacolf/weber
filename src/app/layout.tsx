@@ -42,7 +42,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${libreBaskerville.variable} ${geistMono.variable} font-libre_baskerville h-full antialiased`}
     >
-      <body className={`${libreBaskerville.className} min-h-full flex flex-col bg-background text-foreground selection:bg-neutral-300 selection:text-neutral-900 dark:selection:bg-neutral-700 dark:selection:text-white`}>
+      <body className={`${libreBaskerville.className} min-h-full flex flex-col bg-background text-foreground selection:bg-neutral-300 selection:text-neutral-900 dark:selection:bg-neutral-700 dark:selection:text-white print:bg-white print:text-black print:overflow-visible`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -51,7 +51,7 @@ export default function RootLayout({
         >
           <TooltipProvider>
             <Navbar />
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col print:block print:h-auto print:overflow-visible">
               {children}
             </div>
             <Footer />

@@ -64,7 +64,7 @@ export default function Footer() {
   return (
     <footer
       aria-label="Site Footer"
-      className="w-full border-t border-border/40 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-colors"
+      className="w-full border-t border-border/40 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-colors print:hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         {/* Main Grid */}
