@@ -23,7 +23,6 @@ import {
   ArrowUpRight,
   RefreshCw,
   AlertCircle,
-  ShieldCheck,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -359,9 +358,8 @@ export default function ContactView() {
                       <div className="flex items-center justify-between">
                         <Label
                           htmlFor="captchaAnswer"
-                          className="text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 text-muted-foreground"
+                          className="text-xs font-mono uppercase tracking-wider text-muted-foreground"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
                           Security Verification <span className="text-destructive">*</span>
                         </Label>
                         <Button
