@@ -66,7 +66,7 @@ function TimelinePoint({
     <div
       data-slot="timeline-point"
       className={cn(
-        "relative z-10 flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-full border border-border/80 bg-background text-white transition-all duration-200 group-data-[status=active]/timeline-item:border-foreground/80",
+        "relative z-10 flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-full border border-border/80 bg-background text-foreground transition-all duration-200 group-data-[status=active]/timeline-item:border-foreground/80",
         className
       )}
       {...props}

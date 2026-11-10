@@ -190,13 +190,13 @@ export default function ProductsTimeline() {
   const getProductIcon = (category: string) => {
     switch (category) {
       case "dev-tools":
-        return <Terminal className="size-4 sm:size-5 text-white" />;
+        return <Terminal className="size-4 sm:size-5 text-foreground" />;
       case "ai-agents":
-        return <Bot className="size-4 sm:size-5 text-white" />;
+        return <Bot className="size-4 sm:size-5 text-foreground" />;
       case "blockchain-web3":
-        return <Layers className="size-4 sm:size-5 text-white" />;
+        return <Layers className="size-4 sm:size-5 text-foreground" />;
       default:
-        return <Sparkles className="size-4 sm:size-5 text-white" />;
+        return <Sparkles className="size-4 sm:size-5 text-foreground" />;
     }
   };
 

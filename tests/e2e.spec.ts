@@ -782,7 +782,8 @@ test.describe('Resume & CV Page tests (Khalid Al Shareef PDF-based)', () => {
     // Header info
     await expect(page.getByRole('heading', { name: 'KHALID AL SHAREEF' })).toBeVisible();
     await expect(page.getByText('AI Engineer & Full-Stack Developer', { exact: true })).toBeVisible();
-    await expect(page.getByText('Founder | Anaxonic')).toBeVisible();
+    await expect(page.getByText('Ex. Founder and Lead Engineer | Anaxonic')).toBeVisible();
+    await expect(page.getByAltText('KHALID AL SHAREEF')).toBeVisible();
 
     // Contact info
     await expect(page.getByText('Gaziantep, Turkey')).toBeVisible();
@@ -790,7 +791,7 @@ test.describe('Resume & CV Page tests (Khalid Al Shareef PDF-based)', () => {
     await expect(page.getByText('+90 501 525 00 45')).toBeVisible();
 
     // Work Experience
-    await expect(page.getByText('Anaxonic | Founder')).toBeVisible();
+    await expect(page.getByText('Anaxonic | Founder & Lead Engineer')).toBeVisible();
     await expect(page.getByText('Enbis Automation | Automation Systems Engineer Intern')).toBeVisible();
     await expect(page.getByText('Living It English Cafe | Teacher')).toBeVisible();
 
@@ -814,26 +815,31 @@ test.describe('Resume & CV Page tests (Khalid Al Shareef PDF-based)', () => {
     await expect(downloadBtn).toHaveAttribute('href', '/resume_KhalidAlShareef.pdf');
   });
 
-  test('resume page toggles between interactive document view and cody resume.ts code view', async ({ page }) => {
+  test('resume page has functional Print / Save action and does not reveal code (no resume.ts)', async ({ page }) => {
     await page.goto('/resume');
 
-    // Default: Interactive Resume
+    // Verify resume document header
     await expect(page.getByRole('heading', { name: 'KHALID AL SHAREEF' })).toBeVisible();
 
-    // Click code view button
-    const codeViewBtn = page.getByRole('button', { name: /resume\.ts/i });
-    await expect(codeViewBtn).toBeVisible();
-    await codeViewBtn.click();
+    // Verify resume.ts is NOT present (no code revealed)
+    await expect(page.getByRole('button', { name: /resume\.ts/i })).not.toBeVisible();
+    await expect(page.getByText('khalid-alshareef.resume.ts')).not.toBeVisible();
+    await expect(page.getByText('export const khalidAlShareef')).not.toBeVisible();
 
-    // Verify code view elements
-    await expect(page.getByText('khalid-alshareef.resume.ts', { exact: true })).toBeVisible();
-    await expect(page.getByText('export const khalidAlShareef: DeveloperResume = {')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Copy TS Code/i })).toBeVisible();
+    // Verify Print / Save button exists and is clickable
+    const printBtn = page.getByRole('button', { name: /Print \/ Save/i });
+    await expect(printBtn).toBeVisible();
 
-    // Switch back to interactive view
-    const docViewBtn = page.getByRole('button', { name: /Interactive Resume/i });
-    await docViewBtn.click();
-    await expect(page.getByRole('heading', { name: 'KHALID AL SHAREEF' })).toBeVisible();
+    // Verify window.print is called on click
+    await page.evaluate(() => {
+      (window as unknown as { __printCalled: boolean }).__printCalled = false;
+      window.print = () => {
+        (window as unknown as { __printCalled: boolean }).__printCalled = true;
+      };
+    });
+    await printBtn.click();
+    const wasCalled = await page.evaluate(() => (window as unknown as { __printCalled: boolean }).__printCalled);
+    expect(wasCalled).toBe(true);
   });
 });
 
