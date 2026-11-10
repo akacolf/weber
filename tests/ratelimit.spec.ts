@@ -10,6 +10,8 @@ test.describe('Contact Form Rate Limiting', () => {
       email: 'tester@example.com',
       subject: 'Security Assessment',
       message: 'Testing API rate limiting threshold compliance.',
+      captchaToken: 'test-captcha-token',
+      captchaAnswer: '12345',
     };
 
     // First 5 requests within the window should succeed
@@ -83,6 +85,9 @@ test.describe('Contact Form Rate Limiting', () => {
     await messageInput.click();
     await messageInput.fill('Checking that client-side rate limit messaging renders properly.');
     await expect(messageInput).toHaveValue('Checking that client-side rate limit messaging renders properly.');
+
+    const captchaInput = page.locator('#captchaAnswer');
+    await captchaInput.fill('15');
 
     await page.getByRole('button', { name: /Send message/i }).click();
 
