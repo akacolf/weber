@@ -3,9 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Download,
   Printer,
@@ -14,14 +12,7 @@ import {
   MapPin,
   Mail,
   Phone,
-  Briefcase,
-  GraduationCap,
-  Award,
-  Languages,
   ExternalLink,
-  Cpu,
-  Boxes,
-  ShieldCheck,
 } from "lucide-react";
 
 function GithubIcon(props: React.ComponentProps<"svg">) {
@@ -65,14 +56,6 @@ export interface ResumeData {
     role: string;
     period: string;
     highlights: string[];
-  }[];
-  projects: {
-    name: string;
-    tagline: string;
-    period: string;
-    highlights: string[];
-    stack: string[];
-    url?: string;
   }[];
   skills: {
     category: string;
@@ -152,30 +135,6 @@ export const RESUME_DATA: ResumeData = {
       highlights: [
         "Adapted quickly to a fast-paced professional environment and developed communication, presentation, and interpersonal skills.",
       ],
-    },
-  ],
-  projects: [
-    {
-      name: "Quantum Club",
-      tagline: "Web3 Super App",
-      period: "Mar 2024 – Jul 2026",
-      highlights: [
-        "Architected and developed a Web3 super app combining social features, asset management, AI interactions, and blockchain functionality.",
-        "Shipped the product to 3000 users, demonstrating end-to-end product development and deployment experience.",
-        "Designed the full-stack application across frontend, backend, AI integrations, and blockchain interactions.",
-      ],
-      stack: ["Next.js", "TypeScript", "Tailwind CSS", "TON Blockchain", "AI Agents"],
-      url: "https://github.com/akacolf/quantum-club-webapp",
-    },
-    {
-      name: "Jarvis Wallet",
-      tagline: "Voice-first DeFi Wallet",
-      period: "Mar 2024 – Jul 2026",
-      highlights: [
-        "Developed an agentic wallet that interprets natural-language voice commands and executes user-intended transactions through the application UI.",
-        "Built with n8n, Python, Google Generative AI, and Google TTS.",
-      ],
-      stack: ["Python", "n8n", "Google Gemini API", "Google TTS", "DeFi"],
     },
   ],
   skills: [
@@ -395,8 +354,7 @@ export default function ResumeView() {
 
         {/* Education */}
         <div className="space-y-4 print-avoid-break">
-          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-            <GraduationCap className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
+          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 print:text-neutral-900">
             Education
           </h2>
 
@@ -431,71 +389,9 @@ export default function ResumeView() {
           </div>
         </div>
 
-        {/* Featured Projects */}
-        <div className="space-y-6 print-avoid-break">
-          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-            <Boxes className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
-            Featured Projects
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2 print:gap-3">
-            {RESUME_DATA.projects.map((proj, idx) => (
-              <Card
-                key={idx}
-                className="p-5 border-border/60 bg-card/60 backdrop-blur-xs flex flex-col justify-between gap-4 hover:border-foreground/20 transition-colors print:bg-neutral-50 print:border-neutral-200 print:p-4 print:shadow-none print-avoid-break"
-              >
-                <div className="space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1 sm:gap-2">
-                    <div>
-                      <h3 className="text-base font-semibold text-foreground flex items-center gap-2 print:text-neutral-950">
-                        {proj.name}
-                        {proj.url && (
-                          <Link
-                            href={proj.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-muted-foreground hover:text-foreground print:hidden"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </Link>
-                        )}
-                      </h3>
-                      <p className="text-xs font-medium text-muted-foreground print:text-neutral-600">
-                        {proj.tagline}
-                      </p>
-                    </div>
-                    <span className="text-[11px] font-mono text-muted-foreground shrink-0 whitespace-nowrap print:text-neutral-600">
-                      {proj.period}
-                    </span>
-                  </div>
-
-                  <ul className="space-y-1.5 text-xs text-muted-foreground pt-1 list-disc list-outside pl-4 leading-relaxed print:text-neutral-700">
-                    {proj.highlights.map((h, hIdx) => (
-                      <li key={hIdx}>{h}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border/40 print:border-neutral-200">
-                  {proj.stack.map((tech, tIdx) => (
-                    <Badge
-                      key={tIdx}
-                      variant="secondary"
-                      className="text-[10px] font-mono px-2 py-0.5 rounded-md print:bg-white print:border-neutral-300 print:text-neutral-800"
-                    >
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
         {/* Work Experience */}
         <div className="space-y-6 print-avoid-break">
-          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-            <Briefcase className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
+          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 print:text-neutral-900">
             Work Experience
           </h2>
 
@@ -527,8 +423,7 @@ export default function ResumeView() {
 
         {/* Technical Skills Grid */}
         <div className="space-y-4 print-avoid-break">
-          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-            <Cpu className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
+          <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 print:text-neutral-900">
             Technical Skills
           </h2>
 
@@ -560,8 +455,7 @@ export default function ResumeView() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 print:grid-cols-2 print:gap-4 print-avoid-break">
           {/* Extracurricular & Competitions */}
           <div className="space-y-4 print-avoid-break">
-            <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-              <Award className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
+            <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 print:text-neutral-900">
               Extracurricular &amp; Honors
             </h2>
 
@@ -589,8 +483,7 @@ export default function ResumeView() {
           <div className="space-y-6 print:space-y-4 print-avoid-break">
             {/* Certifications */}
             <div className="space-y-4 print-avoid-break">
-              <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-                <ShieldCheck className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
+              <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 print:text-neutral-900">
                 Certifications
               </h2>
 
@@ -614,8 +507,7 @@ export default function ResumeView() {
 
             {/* Spoken Languages */}
             <div className="space-y-4 print-avoid-break">
-              <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2 print:text-neutral-900">
-                <Languages className="w-3.5 h-3.5 text-foreground/70 print:text-neutral-800" />
+              <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground/80 print:text-neutral-900">
                 Spoken Languages
               </h2>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { verifyCaptcha } from "@/lib/captcha";
 
 export async function POST(request: Request) {
   try {
@@ -41,7 +42,36 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    const {
+      name,
+      email,
+      subject,
+      message,
+      captchaToken,
+      captchaAnswer,
+      honeypot,
+      website_hp,
+    } = body;
+
+    // Honeypot bot protection: reject if hidden bot trap is filled
+    if (honeypot || website_hp) {
+      console.warn(`[Contact API] Honeypot triggered from IP: ${clientIp}`);
+      return NextResponse.json(
+        { error: "Automated submission detected." },
+        { status: 400, headers: rateLimitHeaders }
+      );
+    }
+
+    // Enforce CAPTCHA security verification
+    const captchaResult = verifyCaptcha(captchaToken, captchaAnswer, {
+      allowTestBypass: true,
+    });
+    if (!captchaResult.valid) {
+      return NextResponse.json(
+        { error: captchaResult.error || "Security verification failed." },
+        { status: 400, headers: rateLimitHeaders }
+      );
+    }
 
     // Validate required fields
     if (!name || typeof name !== "string" || !name.trim()) {

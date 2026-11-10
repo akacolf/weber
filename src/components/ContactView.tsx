@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -23,6 +23,7 @@ import {
   ArrowUpRight,
   RefreshCw,
   AlertCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "cn";
 
@@ -105,6 +106,10 @@ export default function ContactView() {
     subject: "",
     message: "",
   });
+  const [captchaData, setCaptchaData] = useState<{ token: string; svg: string } | null>(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [isLoadingCaptcha, setIsLoadingCaptcha] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -112,6 +117,28 @@ export default function ContactView() {
 
   const email = "khalidthenoble@gmail.com";
   const calendarUrl = "https://calendar.app.google/EtDmg8dKUaTUUYWw7";
+
+  const fetchCaptcha = async () => {
+    setIsLoadingCaptcha(true);
+    try {
+      const response = await fetch("/api/contact/captcha", {
+        headers: { "Cache-Control": "no-cache" },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCaptchaData(data);
+        setCaptchaAnswer("");
+      }
+    } catch (err) {
+      console.error("Failed to fetch security challenge:", err);
+    } finally {
+      setIsLoadingCaptcha(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(email);
@@ -136,6 +163,11 @@ export default function ContactView() {
       return;
     }
 
+    if (!captchaAnswer.trim()) {
+      setErrorMessage("Please solve the security verification challenge.");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -145,12 +177,19 @@ export default function ContactView() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          captchaToken: captchaData?.token,
+          captchaAnswer: captchaAnswer.trim(),
+          honeypot,
+        }),
       });
 
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
+        // Refresh captcha on failure
+        fetchCaptcha();
         throw new Error(
           data?.error || "Failed to send message. Please try again or email directly."
         );
@@ -175,8 +214,11 @@ export default function ContactView() {
       subject: "",
       message: "",
     });
+    setCaptchaAnswer("");
+    setHoneypot("");
     setErrorMessage(null);
     setIsSubmitted(false);
+    fetchCaptcha();
   };
 
   return (
@@ -306,6 +348,99 @@ export default function ContactView() {
                         onChange={handleChange}
                         required
                         className="min-h-[140px] resize-y"
+                      />
+                    </div>
+
+                    {/* Security Verification / Captcha */}
+                    <div
+                      data-testid="captcha-section"
+                      className="space-y-2 p-3.5 rounded-xl border border-border/70 bg-secondary/15 backdrop-blur-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor="captchaAnswer"
+                          className="text-xs font-mono uppercase tracking-wider flex items-center gap-1.5 text-muted-foreground"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
+                          Security Verification <span className="text-destructive">*</span>
+                        </Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="xs"
+                          data-testid="refresh-captcha-btn"
+                          onClick={fetchCaptcha}
+                          disabled={isLoadingCaptcha}
+                          className="text-xs text-muted-foreground hover:text-foreground h-7 px-2 gap-1 cursor-pointer"
+                          title="Refresh security challenge"
+                          aria-label="Refresh security challenge"
+                        >
+                          <RefreshCw
+                            className={cn("w-3 h-3", isLoadingCaptcha && "animate-spin")}
+                          />
+                          <span>New challenge</span>
+                        </Button>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        {/* Captcha visual challenge */}
+                        <div
+                          data-testid="captcha-display"
+                          className="h-11 sm:w-44 shrink-0 rounded-lg border border-border/80 bg-background/90 overflow-hidden flex items-center justify-center select-none shadow-xs text-foreground p-1"
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              captchaData?.svg ||
+                              '<div class="text-xs text-muted-foreground animate-pulse font-mono">Loading code...</div>',
+                          }}
+                          aria-label="Security math challenge"
+                        />
+
+                        {/* User answer input */}
+                        <div className="flex-1">
+                          <Input
+                            id="captchaAnswer"
+                            name="captchaAnswer"
+                            data-testid="captcha-input"
+                            type="text"
+                            placeholder="Enter answer above"
+                            value={captchaAnswer}
+                            onChange={(e) => {
+                              setCaptchaAnswer(e.target.value);
+                              if (errorMessage) setErrorMessage(null);
+                            }}
+                            required
+                            autoComplete="off"
+                            className="h-11 font-mono tracking-wider"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Solve the equation above to confirm you are human and protect against automated spam.
+                      </p>
+                    </div>
+
+                    {/* Honeypot field for bot trapping (invisible to human visitors) */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        opacity: 0,
+                        pointerEvents: "none",
+                        height: 0,
+                        width: 0,
+                        overflow: "hidden",
+                        zIndex: -1,
+                      }}
+                    >
+                      <label htmlFor="website_hp">Leave this field blank</label>
+                      <input
+                        id="website_hp"
+                        name="website_hp"
+                        type="text"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
                       />
                     </div>
                   </div>

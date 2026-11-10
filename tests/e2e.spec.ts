@@ -433,6 +433,8 @@ test.describe('Contact page tests', () => {
     await expect(page.getByLabel(/Email Address/i)).toBeVisible();
     await expect(page.getByLabel(/Subject \/ Project Category/i)).toBeVisible();
     await expect(page.getByLabel(/Message/i)).toBeVisible();
+    await expect(page.getByLabel(/Security Verification/i)).toBeVisible();
+    await expect(page.locator('[data-testid="captcha-display"]')).toBeVisible();
     await expect(form.getByRole('button', { name: /Send message/i })).toBeVisible();
 
     // Verify Google Calendar meeting booking section
@@ -481,6 +483,10 @@ test.describe('Contact page tests', () => {
     await messageInput.click();
     await messageInput.fill('Looking to collaborate on a new high-throughput application.');
 
+    // Fill security verification code
+    const captchaInput = page.locator('#captchaAnswer');
+    await captchaInput.fill('24');
+
     // Submit form
     await page.getByRole('button', { name: /Send message/i }).click();
 
@@ -500,6 +506,25 @@ test.describe('Contact page tests', () => {
     const form = page.locator('[data-testid="contact-form"]');
     await expect(form).toBeVisible();
     await expect(page.locator('#name')).toHaveValue('');
+  });
+
+  test('contact form captcha challenge can be refreshed and displays security feedback', async ({ page }) => {
+    await page.goto('/contact?skipIntro=true');
+    await page.waitForLoadState('networkidle');
+
+    // Captcha section is present
+    const captchaSection = page.locator('[data-testid="captcha-section"]');
+    await expect(captchaSection).toBeVisible();
+
+    // Verify refresh button exists and can be clicked
+    const refreshBtn = captchaSection.locator('[data-testid="refresh-captcha-btn"]');
+    await expect(refreshBtn).toBeVisible();
+    await refreshBtn.click();
+
+    // Challenge SVG continues to display properly
+    const captchaDisplay = page.locator('[data-testid="captcha-display"]');
+    await expect(captchaDisplay).toBeVisible();
+    await expect(captchaDisplay.locator('svg')).toBeVisible();
   });
 });
 
@@ -847,10 +872,8 @@ test.describe('Resume & CV Page tests (Khalid Al Shareef PDF-based)', () => {
     await expect(page.getByText('Enbis Automation | Automation Systems Engineer Intern')).toBeVisible();
     await expect(page.getByText('Living It English Cafe | Teacher')).toBeVisible();
 
-    // Featured Projects from resume
-    await expect(page.getByRole('heading', { name: 'Quantum Club' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Jarvis Wallet' })).toBeVisible();
-    await expect(page.getByText('Shipped the product to 3000 users', { exact: false })).toBeVisible();
+    // Featured Projects section has been removed from resume
+    await expect(page.getByRole('heading', { name: 'Featured Projects' })).not.toBeVisible();
 
     // Education
     await expect(page.getByText('University of Gaziantep, Gaziantep, TR')).toBeVisible();
