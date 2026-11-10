@@ -107,7 +107,7 @@ export default function ContactView() {
   });
   const [captchaData, setCaptchaData] = useState<{ token: string; svg: string } | null>(null);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
-  const [isLoadingCaptcha, setIsLoadingCaptcha] = useState(false);
+  const [isLoadingCaptcha, setIsLoadingCaptcha] = useState(true);
   const [honeypot, setHoneypot] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -136,7 +136,30 @@ export default function ContactView() {
   };
 
   useEffect(() => {
-    fetchCaptcha();
+    let ignore = false;
+    async function loadInitialCaptcha() {
+      try {
+        const response = await fetch("/api/contact/captcha", {
+          headers: { "Cache-Control": "no-cache" },
+        });
+        if (response.ok && !ignore) {
+          const data = await response.json();
+          setCaptchaData(data);
+          setCaptchaAnswer("");
+        }
+      } catch (err) {
+        console.error("Failed to fetch security challenge:", err);
+      } finally {
+        if (!ignore) {
+          setIsLoadingCaptcha(false);
+        }
+      }
+    }
+
+    loadInitialCaptcha();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleCopyEmail = () => {
