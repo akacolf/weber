@@ -55,6 +55,12 @@ test.describe('Header & Navigation tests', () => {
     await expect(nav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
 
+    // Verify Try Weber button is present and links to AI model subdomain
+    const weberBtn = header.getByRole('link', { name: /Try Weber/i });
+    await expect(weberBtn).toBeVisible();
+    await expect(weberBtn).toHaveAttribute('href', 'https://weber.colf.vercel.app');
+    await expect(weberBtn).toHaveAttribute('target', '_blank');
+
     // Verify white contact me button is present in the header
     const contactBtn = header.getByRole('link', { name: 'Contact me' });
     await expect(contactBtn).toBeVisible();
@@ -119,6 +125,8 @@ test.describe('Header & Navigation tests', () => {
     await expect(mobileNav.getByRole('link', { name: 'My constitution' })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
+    await expect(mobileNav.getByRole('link', { name: /Try Weber/i })).toBeVisible();
+    await expect(mobileNav.getByRole('link', { name: /Try Weber/i })).toHaveAttribute('href', 'https://weber.colf.vercel.app');
     await expect(mobileNav.getByRole('link', { name: 'Contact me' })).toBeVisible();
   });
 

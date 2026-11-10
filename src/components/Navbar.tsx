@@ -30,6 +30,9 @@ export const NAV_LINKS = [
   { label: "My resume/cv", href: "/resume" },
 ];
 
+export const WEBER_URL =
+  process.env.NEXT_PUBLIC_WEBER_URL || "https://weber.colf.vercel.app";
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -135,6 +138,17 @@ export default function Navbar() {
         <div className="flex items-center flex-1 justify-end gap-3">
           <ModeToggle />
 
+          <a
+            href={WEBER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium border border-border/80 bg-secondary/50 text-foreground hover:bg-secondary hover:border-border active:scale-95 transition-all duration-150 select-none shadow-sm"
+            aria-label="Try Weber AI model (opens in a new tab)"
+          >
+            <span>Try Weber</span>
+            <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
+          </a>
+
           <Link
             href="/contact"
             className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all duration-150 select-none shadow-sm"
@@ -233,13 +247,27 @@ export default function Navbar() {
                       </Link>
                     </div>
 
-                    <Link
-                      href="/contact"
-                      onClick={() => setIsOpen(false)}
-                      className="mt-4 flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all shadow-sm select-none"
-                    >
-                      Contact me
-                    </Link>
+                    <div className="flex flex-col gap-2.5 mt-4">
+                      <a
+                        href={WEBER_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border border-border/80 bg-secondary/60 text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm select-none"
+                        aria-label="Try Weber AI model (opens in a new tab)"
+                      >
+                        <span>Try Weber</span>
+                        <ArrowUpRight className="h-4 w-4 opacity-70" />
+                      </a>
+
+                      <Link
+                        href="/contact"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all shadow-sm select-none"
+                      >
+                        Contact me
+                      </Link>
+                    </div>
                   </nav>
                 </div>
               </SheetContent>
