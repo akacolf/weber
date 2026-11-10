@@ -198,7 +198,7 @@ export default function ConstitutionView() {
       {/* Ratification & Signature */}
       <footer className="border-t border-border/60 pt-16 text-center space-y-6">
         <blockquote className="text-base sm:text-lg italic text-foreground font-serif max-w-xl mx-auto leading-relaxed">
-          &ldquo;I hereby solemnly declare that I&apos;ll abide the principles of this Constitution and always seek the benefit of humanity.&rdquo;
+          &ldquo;I hereby solemnly declare that I&apos;ll abide by the principles of this Constitution and always seek the benefit of humanity.&rdquo;
         </blockquote>
 
         {/* Hand-Signed Document Block */}

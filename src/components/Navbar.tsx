@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Logo from "@/components/Logo";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -32,7 +32,6 @@ export const NAV_LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const isAboutActive = pathname === "/about" || pathname === "/constitution";
@@ -51,7 +50,7 @@ export default function Navbar() {
           className="hidden md:flex items-center justify-center gap-8 text-sm font-medium"
         >
           {/* About me Dropdown Menu */}
-          <DropdownMenu>
+          <DropdownMenu key={pathname}>
             <DropdownMenuTrigger
               className={cn(
                 "group inline-flex items-center gap-1.5 transition-colors select-none cursor-pointer outline-none rounded-md px-2 py-1 text-sm font-medium",
@@ -67,7 +66,6 @@ export default function Navbar() {
             <DropdownMenuContent align="start" className="w-56 p-1.5 shadow-xl border-border/80">
               <DropdownMenuGroup>
                 <DropdownMenuItem
-                  onClick={() => router.push("/about")}
                   className={cn(
                     "px-3 py-2 text-xs font-medium cursor-pointer rounded-md transition-colors",
                     pathname === "/about"
@@ -78,7 +76,6 @@ export default function Navbar() {
                   <Link
                     href="/about"
                     className="flex flex-col text-left w-full"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     <span className="font-medium text-foreground">About me</span>
                     <span className="text-[10px] text-muted-foreground font-normal">Background & bio</span>
@@ -86,7 +83,6 @@ export default function Navbar() {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                  onClick={() => router.push("/constitution")}
                   className={cn(
                     "px-3 py-2 text-xs font-medium cursor-pointer rounded-md transition-colors",
                     pathname === "/constitution"
@@ -97,7 +93,6 @@ export default function Navbar() {
                   <Link
                     href="/constitution"
                     className="flex flex-col text-left w-full"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     <span className="font-medium text-foreground">My constitution</span>
                     <span className="text-[10px] text-muted-foreground font-normal">Principles & operating code</span>
