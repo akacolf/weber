@@ -55,11 +55,10 @@ test.describe('Header & Navigation tests', () => {
     await expect(nav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
 
-    // Verify Try Weber button is present and links to AI model subdomain
+    // Verify Try Weber button is present and links to AI model route (/weber)
     const weberBtn = header.getByRole('link', { name: /Try Weber/i });
     await expect(weberBtn).toBeVisible();
-    await expect(weberBtn).toHaveAttribute('href', 'https://weber.colf.vercel.app');
-    await expect(weberBtn).toHaveAttribute('target', '_blank');
+    await expect(weberBtn).toHaveAttribute('href', '/weber');
 
     // Verify white contact me button is present in the header
     const contactBtn = header.getByRole('link', { name: 'Contact me' });
@@ -126,7 +125,7 @@ test.describe('Header & Navigation tests', () => {
     await expect(mobileNav.getByRole('link', { name: "Products I've built" })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: 'My resume/cv' })).toBeVisible();
     await expect(mobileNav.getByRole('link', { name: /Try Weber/i })).toBeVisible();
-    await expect(mobileNav.getByRole('link', { name: /Try Weber/i })).toHaveAttribute('href', 'https://weber.colf.vercel.app');
+    await expect(mobileNav.getByRole('link', { name: /Try Weber/i })).toHaveAttribute('href', '/weber');
     await expect(mobileNav.getByRole('link', { name: 'Contact me' })).toBeVisible();
   });
 
@@ -925,6 +924,86 @@ test.describe('Resume & CV Page tests (Khalid Al Shareef PDF-based)', () => {
     expect(wasCalled).toBe(true);
   });
 });
+
+test.describe('Weber Model Serving (/weber) tests', () => {
+  test('/weber page renders correctly with Weber tab title, greeting above input, and dynamic conversation flow', async ({ page }) => {
+    await page.goto('/weber');
+
+    // Verify document tab title is strictly "Weber"
+    await expect(page).toHaveTitle('Weber');
+
+    // Verify website header and footer are NOT shown on /weber
+    await expect(page.locator('header.sticky')).not.toBeVisible();
+    await expect(page.locator('footer[aria-label="Site Footer"]')).not.toBeVisible();
+
+    // Verify initial greeting text "Hi Human. What can I do for you today?"
+    const greeting = page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i });
+    await expect(greeting).toBeVisible();
+
+    // Verify "Human" has lime green styling
+    const humanSpan = greeting.locator('span');
+    await expect(humanSpan).toHaveText('Human');
+    await expect(humanSpan).toHaveClass(/lime/);
+
+    // In sidebar, Portfolio link and New chat button exist
+    const sidebar = page.locator('[data-slot="sidebar"]');
+    await expect(sidebar.getByRole('link', { name: /Portfolio/i })).toBeVisible();
+    await expect(sidebar.getByRole('button', { name: /New chat/i })).toBeVisible();
+
+    // Verify top bar buttons from Screenshot 3 were removed (only in sidebar)
+    const topBar = page.locator('div.sticky.top-0');
+    await expect(topBar.getByRole('button', { name: /New chat/i })).not.toBeVisible();
+    await expect(topBar.getByRole('link', { name: /Portfolio/i })).not.toBeVisible();
+
+    // Verify placeholder conversations in sidebar are deleted
+    await expect(sidebar.getByText('Deploy Jetton Token on TON')).not.toBeVisible();
+    await expect(sidebar.getByText('Bonding Curves in DeFi')).not.toBeVisible();
+    await expect(sidebar.getByText('FunC Cell Serialization Guide')).not.toBeVisible();
+    await expect(sidebar.getByText('No past conversations')).toBeVisible();
+
+    // Verify initial format: conversation bar is directly visible below greeting
+    const textarea = page.getByPlaceholder(/Ask me anything/i);
+    await expect(textarea).toBeVisible();
+    const sendBtn = page.getByTitle(/Send message/i);
+    await expect(sendBtn).toBeVisible();
+
+    // Verify shift-enter text is deleted and warning text is rephrased and present
+    await expect(page.getByText('Press Enter to send, Shift+Enter for new line')).not.toBeVisible();
+    await expect(page.getByText('Weber can make mistakes. Verify facts.')).toBeVisible();
+
+    // Verify starter suggestions are removed
+    await expect(page.getByRole('button', { name: /Deploy on TON/i })).not.toBeVisible();
+
+    // User types prompt -> page turns into conversation
+    await textarea.click();
+    await textarea.pressSequentially('How do I deploy a smart contract on TON?');
+    await expect(sendBtn).toBeEnabled();
+    await sendBtn.click();
+
+    // The page turns into a conversation: greeting is replaced by conversation thread
+    await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).not.toBeVisible();
+    await expect(page.getByRole('paragraph').filter({ hasText: 'How do I deploy a smart' })).toBeVisible();
+
+    // The conversation is stored in the sidebar
+    await expect(sidebar.getByText(/How do I deploy a smart contract/i)).toBeVisible();
+
+    // Clicking New chat in sidebar returns to initial greeting format
+    await sidebar.getByRole('button', { name: /New chat/i }).click();
+    await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).toBeVisible();
+  });
+
+  test('Navbar Try Weber button navigates to /weber', async ({ page }) => {
+    await page.goto('/?skipIntro=true');
+
+    const weberBtn = page.locator('header').getByRole('link', { name: /Try Weber/i });
+    await expect(weberBtn).toBeVisible();
+    await weberBtn.click();
+    await expect(page).toHaveURL(/\/weber$/);
+    await expect(page).toHaveTitle('Weber');
+    await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).toBeVisible();
+  });
+});
+
 
 
 

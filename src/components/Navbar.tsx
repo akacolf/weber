@@ -31,13 +31,19 @@ export const NAV_LINKS = [
 ];
 
 export const WEBER_URL =
-  process.env.NEXT_PUBLIC_WEBER_URL || "https://weber.colf.vercel.app";
+  process.env.NEXT_PUBLIC_WEBER_URL || "/weber";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
+  // The header of the website is not shown on the Weber page
+  if (pathname === "/weber" || pathname?.startsWith("/weber/")) {
+    return null;
+  }
+
   const isAboutActive = pathname === "/about" || pathname === "/constitution";
+  const isInternalWeber = WEBER_URL.startsWith("/");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 transition-colors print:hidden">
@@ -138,16 +144,31 @@ export default function Navbar() {
         <div className="flex items-center flex-1 justify-end gap-3">
           <ModeToggle />
 
-          <a
-            href={WEBER_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium border border-border/80 bg-secondary/50 text-foreground hover:bg-secondary hover:border-border active:scale-95 transition-all duration-150 select-none shadow-sm"
-            aria-label="Try Weber AI model (opens in a new tab)"
-          >
-            <span>Try Weber</span>
-            <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
-          </a>
+          {isInternalWeber ? (
+            <Link
+              href={WEBER_URL}
+              className={cn(
+                "hidden md:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium border border-border/80 bg-secondary/50 text-foreground hover:bg-secondary hover:border-border active:scale-95 transition-all duration-150 select-none shadow-sm",
+                pathname === "/weber" && "bg-secondary border-border font-semibold"
+              )}
+              aria-label="Try Weber AI model"
+              aria-current={pathname === "/weber" ? "page" : undefined}
+            >
+              <span>Try Weber</span>
+              <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
+            </Link>
+          ) : (
+            <a
+              href={WEBER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium border border-border/80 bg-secondary/50 text-foreground hover:bg-secondary hover:border-border active:scale-95 transition-all duration-150 select-none shadow-sm"
+              aria-label="Try Weber AI model (opens in a new tab)"
+            >
+              <span>Try Weber</span>
+              <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
+            </a>
+          )}
 
           <Link
             href="/contact"
@@ -248,17 +269,33 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex flex-col gap-2.5 mt-4">
-                      <a
-                        href={WEBER_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border border-border/80 bg-secondary/60 text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm select-none"
-                        aria-label="Try Weber AI model (opens in a new tab)"
-                      >
-                        <span>Try Weber</span>
-                        <ArrowUpRight className="h-4 w-4 opacity-70" />
-                      </a>
+                      {isInternalWeber ? (
+                        <Link
+                          href={WEBER_URL}
+                          onClick={() => setIsOpen(false)}
+                          className={cn(
+                            "flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border border-border/80 bg-secondary/60 text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm select-none",
+                            pathname === "/weber" && "bg-secondary font-semibold"
+                          )}
+                          aria-label="Try Weber AI model"
+                          aria-current={pathname === "/weber" ? "page" : undefined}
+                        >
+                          <span>Try Weber</span>
+                          <ArrowUpRight className="h-4 w-4 opacity-70" />
+                        </Link>
+                      ) : (
+                        <a
+                          href={WEBER_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border border-border/80 bg-secondary/60 text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm select-none"
+                          aria-label="Try Weber AI model (opens in a new tab)"
+                        >
+                          <span>Try Weber</span>
+                          <ArrowUpRight className="h-4 w-4 opacity-70" />
+                        </a>
+                      )}
 
                       <Link
                         href="/contact"

@@ -55,6 +55,11 @@ const CURRENT_YEAR = 2026;
 export default function Footer() {
   const pathname = usePathname();
 
+  // The footer of the website is not shown on the Weber page
+  if (pathname === "/weber" || pathname?.startsWith("/weber/")) {
+    return null;
+  }
+
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
