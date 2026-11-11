@@ -1060,6 +1060,17 @@ test.describe('Weber Model Serving (/weber) tests', () => {
     const toast = page.locator('[data-sonner-toast]');
     await expect(toast).toBeVisible();
     await expect(toast.getByText('chat cleared', { exact: false })).toBeVisible();
+
+    // Verify sonner toast is horizontally centered relative to the chat greeting
+    const headingBox = await page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i }).boundingBox();
+    const pillBox = await toast.locator('div').first().boundingBox();
+    expect(headingBox).not.toBeNull();
+    expect(pillBox).not.toBeNull();
+    if (headingBox && pillBox) {
+      const headingCenter = headingBox.x + headingBox.width / 2;
+      const pillCenter = pillBox.x + pillBox.width / 2;
+      expect(Math.abs(pillCenter - headingCenter)).toBeLessThanOrEqual(2);
+    }
   });
 });
 

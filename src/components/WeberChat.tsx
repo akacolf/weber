@@ -349,6 +349,7 @@ export default function WeberChat() {
         id: "weber-clear-chat",
         duration: 2000,
         position: "top-center",
+        className: "w-full flex justify-center",
       }
     );
   }, [activeId, conversations, persistConversations]);

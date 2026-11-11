@@ -193,3 +193,21 @@
   }
 }
 
+/* Sonner toast centering and dynamic layout alignment */
+[data-sonner-toaster] [data-sonner-toast] {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+[data-sonner-toaster][data-x-position="center"] {
+  transition: left 200ms ease-linear, transform 400ms ease;
+}
+
+@media (min-width: 768px) {
+  body:has([data-slot="sidebar"][data-state="expanded"]) [data-sonner-toaster][data-x-position="center"] {
+    left: calc(50% + var(--sidebar-width, 16rem) / 2);
+  }
+}
+
+
