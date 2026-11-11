@@ -64,6 +64,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { WeberLogo } from "@/components/WeberLogo";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export interface Message {
@@ -106,14 +107,22 @@ function WeberTopChatBar({ activeTitle, hasMessages }: WeberTopChatBarProps) {
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <SidebarTrigger className="h-8 w-8 hover:bg-muted cursor-pointer shrink-0" />
         {showHeaderLogo && (
-          <Link
-            href="/weber"
-            className="flex items-center gap-2 select-none hover:opacity-80 transition-opacity shrink-0 animate-in fade-in duration-200"
-            title="Weber AI"
-            aria-label="Weber AI"
-          >
-            <WeberLogo className="h-5 sm:h-5.5 w-auto text-foreground" />
-          </Link>
+          <div className="flex items-center gap-2 select-none shrink-0 animate-in fade-in duration-200">
+            <Link
+              href="/weber"
+              className="flex items-center hover:opacity-80 transition-opacity"
+              title="Weber AI"
+              aria-label="Weber AI"
+            >
+              <WeberLogo className="h-6 sm:h-6.5 w-auto text-foreground" />
+            </Link>
+            <Badge
+              variant="outline"
+              className="h-5 px-2 text-[10.5px] font-mono font-medium rounded-full text-muted-foreground border-border/80 bg-muted/40 select-none"
+            >
+              Preview
+            </Badge>
+          </div>
         )}
         {hasMessages && (
           <>
@@ -658,22 +667,29 @@ export default function WeberChat() {
       {/* ----------------- PAST CONVERSATIONS SIDEBAR ----------------- */}
       <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/70">
         <SidebarHeader className="p-3 border-b border-sidebar-border/50 gap-2.5">
-          <div className="flex items-center px-1 py-1">
+          <div className="flex items-center gap-2 px-1 py-1">
             <Link
               href="/weber"
               className="inline-flex items-center hover:opacity-80 transition-opacity"
               title="Weber AI"
+              aria-label="Weber AI"
             >
-              <WeberLogo className="h-5 w-auto text-foreground" />
+              <WeberLogo className="h-6 sm:h-6.5 w-auto text-foreground" />
             </Link>
+            <Badge
+              variant="outline"
+              className="h-5 px-2 text-[10.5px] font-mono font-medium rounded-full text-muted-foreground border-border/80 bg-muted/40 select-none"
+            >
+              Preview
+            </Badge>
           </div>
 
           <Button
             variant="outline"
             onClick={handleNewChat}
-            className="w-full justify-start gap-2 h-9 text-xs font-medium border-border/80 bg-background/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-xs cursor-pointer"
+            className="w-full justify-start gap-2 h-9 text-xs font-medium border-border/80 bg-background/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-foreground shadow-xs cursor-pointer group/new-chat"
           >
-            <Plus className="h-4 w-4 text-white" />
+            <Plus className="h-4 w-4 text-foreground/80 group-hover/new-chat:text-sidebar-accent-foreground shrink-0 transition-colors" />
             <span>New chat</span>
           </Button>
         </SidebarHeader>
@@ -700,7 +716,7 @@ export default function WeberChat() {
                             className={cn(
                               "h-3.5 w-3.5 shrink-0 transition-colors",
                               isActive
-                                ? "text-white"
+                                ? "text-sidebar-accent-foreground font-medium"
                                 : "text-muted-foreground opacity-70 group-hover/item:opacity-100"
                             )}
                           />
@@ -791,7 +807,7 @@ export default function WeberChat() {
               >
                 <div
                   className={cn(
-                    "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-neutral-500 focus-within:ring-1 focus-within:ring-neutral-500/30 backdrop-blur-xl transition-all shadow-xl",
+                    "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30 backdrop-blur-xl transition-all shadow-xl",
                     input.includes("\n") ? "items-end" : "items-center"
                   )}
                 >
@@ -960,7 +976,7 @@ export default function WeberChat() {
               >
                 <div
                   className={cn(
-                    "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-neutral-500 focus-within:ring-1 focus-within:ring-neutral-500/30 backdrop-blur-xl transition-all shadow-lg",
+                    "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30 backdrop-blur-xl transition-all shadow-lg",
                     input.includes("\n") ? "items-end" : "items-center"
                   )}
                 >

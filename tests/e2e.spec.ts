@@ -653,10 +653,10 @@ test.describe("Products I've built timeline tests", () => {
     await expect(journeySpan).toBeVisible();
     await expect(journeySpan).toHaveClass(/text-lime-/);
 
-    // Check adjusted product dates
-    await expect(page.getByText('2026 • June 2026')).toBeVisible();
-    await expect(page.getByText('2026 • April 2026')).toBeVisible();
-    await expect(page.getByText(/2024 • Q2 2024 \(March 2024\)/)).toBeVisible();
+    // Check adjusted product dates (clean month and year without redundant leading year)
+    await expect(page.getByText('June 2026')).toBeVisible();
+    await expect(page.getByText('April 2026')).toBeVisible();
+    await expect(page.getByText('March 2024')).toBeVisible();
 
     // Verify shadcn timeline primitive exists
     const timeline = page.locator('[data-slot="timeline"]');
@@ -945,15 +945,16 @@ test.describe('Weber Model Serving (/weber) tests', () => {
     await expect(humanSpan).toHaveText('Human');
     await expect(humanSpan).toHaveClass(/lime/);
 
-    // In sidebar, Portfolio link and New chat button exist
+    // In sidebar, Weber link, Preview badge, and New chat button exist
     const sidebar = page.locator('[data-slot="sidebar"]');
-    await expect(sidebar.getByRole('link', { name: /Portfolio/i })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: /Weber/i })).toBeVisible();
+    await expect(sidebar.getByText('Preview')).toBeVisible();
     await expect(sidebar.getByRole('button', { name: /New chat/i })).toBeVisible();
 
-    // Verify top bar buttons from Screenshot 3 were removed (only in sidebar)
+    // Verify top bar buttons (homepage back link exists, new chat is only in sidebar)
     const topBar = page.locator('div.sticky.top-0');
     await expect(topBar.getByRole('button', { name: /New chat/i })).not.toBeVisible();
-    await expect(topBar.getByRole('link', { name: /Portfolio/i })).not.toBeVisible();
+    await expect(topBar.getByRole('link', { name: /Back to my homepage/i })).toBeVisible();
 
     // Verify placeholder conversations in sidebar are deleted
     await expect(sidebar.getByText('Deploy Jetton Token on TON')).not.toBeVisible();
@@ -997,6 +998,7 @@ test.describe('Weber Model Serving (/weber) tests', () => {
 
     const weberBtn = page.locator('header').getByRole('link', { name: /Try Weber/i });
     await expect(weberBtn).toBeVisible();
+    await page.waitForLoadState('domcontentloaded');
     await weberBtn.click();
     await expect(page).toHaveURL(/\/weber$/);
     await expect(page).toHaveTitle('Weber');

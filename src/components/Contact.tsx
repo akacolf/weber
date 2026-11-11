@@ -37,7 +37,7 @@ export default function Contact() {
           </p>
 
           {/* Email Copy Card */}
-          <div className="inline-flex flex-col sm:flex-row items-center gap-3 p-2 bg-background/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-lg mb-8">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-3 p-2 bg-background/80 backdrop-blur-md rounded-2xl border border-border/80 dark:border-white/10 shadow-lg mb-8">
             <div className="flex items-center gap-2 px-4 py-2">
               <Mail className="w-4 h-4 text-sky-400" />
               <span className="font-mono text-sm text-foreground select-all">
@@ -66,7 +66,7 @@ export default function Contact() {
           </div>
 
           {/* Social Links */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground border-t border-white/5 pt-8">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground border-t border-border/40 dark:border-white/5 pt-8">
             <a
               href="https://github.com/akacolf"
               target="_blank"

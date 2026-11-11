@@ -170,7 +170,7 @@ export default function Navbar() {
 
           <Link
             href="/contact"
-            className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all duration-150 select-none shadow-sm"
+            className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all duration-150 select-none shadow-sm border border-neutral-200/80 dark:border-transparent"
           >
             Contact me
           </Link>
@@ -296,7 +296,7 @@ export default function Navbar() {
                       <Link
                         href="/contact"
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all shadow-sm select-none"
+                        className="flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium bg-white text-black hover:bg-white/90 active:scale-95 transition-all shadow-sm select-none border border-neutral-200/80 dark:border-transparent"
                       >
                         Contact me
                       </Link>

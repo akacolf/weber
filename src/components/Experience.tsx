@@ -84,7 +84,7 @@ export default function Experience() {
         </div>
 
         <Tabs defaultValue="experience" className="w-full">
-          <TabsList className="mb-8 bg-background/60 backdrop-blur-md border border-white/10 p-1">
+          <TabsList className="mb-8 bg-background/60 backdrop-blur-md border border-border/80 dark:border-white/10 p-1">
             <TabsTrigger value="experience" className="gap-2 cursor-pointer">
               <Briefcase className="w-4 h-4" />
               Roles &amp; Trajectory
@@ -101,7 +101,7 @@ export default function Experience() {
               {ROLES.map((job, idx) => (
                 <Card
                   key={idx}
-                  className="p-6 sm:p-8 rounded-2xl bg-neutral-900/30 backdrop-blur-md border-white/10 hover:border-white/20 transition-all shadow-sm"
+                  className="p-6 sm:p-8 rounded-2xl bg-card/70 dark:bg-neutral-900/30 backdrop-blur-md border-border/80 dark:border-white/10 hover:border-border dark:hover:border-white/20 transition-all shadow-sm"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
@@ -114,7 +114,7 @@ export default function Experience() {
                     </div>
                     <Badge
                       variant="outline"
-                      className="w-fit font-mono text-xs text-muted-foreground border-white/10"
+                      className="w-fit font-mono text-xs text-muted-foreground border-border/80 dark:border-white/10"
                     >
                       {job.period}
                     </Badge>
@@ -129,7 +129,7 @@ export default function Experience() {
                       <Badge
                         key={s}
                         variant="secondary"
-                        className="text-xs bg-white/5 border border-white/5 text-muted-foreground hover:text-foreground"
+                        className="text-xs border border-border/60 bg-secondary/50 text-muted-foreground hover:text-foreground"
                       >
                         {s}
                       </Badge>
@@ -146,7 +146,7 @@ export default function Experience() {
               {SKILL_CATEGORIES.map((cat, idx) => (
                 <Card
                   key={idx}
-                  className="p-6 rounded-2xl bg-neutral-900/30 backdrop-blur-md border-white/10 hover:border-white/20 transition-all flex flex-col justify-between"
+                  className="p-6 rounded-2xl bg-card/70 dark:bg-neutral-900/30 backdrop-blur-md border-border/80 dark:border-white/10 hover:border-border dark:hover:border-white/20 transition-all flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-4">
@@ -168,7 +168,7 @@ export default function Experience() {
                     </ul>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-white/5">
+                  <div className="pt-6 mt-6 border-t border-border/50 dark:border-white/5">
                     <span className="font-mono text-[11px] text-muted-foreground/60">
                       Production Ready
                     </span>

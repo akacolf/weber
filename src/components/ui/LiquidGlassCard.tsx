@@ -36,8 +36,8 @@ export default function LiquidGlassCard({
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "relative rounded-2xl overflow-hidden p-6 transition-all duration-300",
-        "bg-neutral-900/50 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]",
-        "hover:border-white/20 hover:shadow-[0_12px_48px_0_rgba(56,189,248,0.12)]",
+        "bg-card/75 dark:bg-neutral-900/50 backdrop-blur-xl border border-border/70 dark:border-white/10 shadow-lg dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.36)]",
+        "hover:border-border dark:hover:border-white/20 hover:shadow-xl dark:hover:shadow-[0_12px_48px_0_rgba(56,189,248,0.12)]",
         className
       )}
       {...props}
@@ -52,7 +52,7 @@ export default function LiquidGlassCard({
       />
 
       {/* Glass bevel top highlight */}
-      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-foreground/10 dark:via-white/20 to-transparent" />
 
       {/* Inset ambient bottom glow */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-sky-500/[0.03] to-transparent" />

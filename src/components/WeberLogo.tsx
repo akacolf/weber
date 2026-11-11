@@ -18,7 +18,7 @@ export function WeberLogo({ className, ...props }: WeberLogoProps) {
       viewBox="155 515 1205 430"
       fill="currentColor"
       aria-label="Weber Logo"
-      className={cn("h-6 w-auto text-foreground shrink-0 transition-colors", className)}
+      className={cn("h-6 sm:h-7 w-auto text-foreground shrink-0 transition-colors", className)}
       {...props}
     >
       <g>
