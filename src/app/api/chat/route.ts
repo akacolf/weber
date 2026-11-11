@@ -16,65 +16,6 @@ const SYSTEM_PROMPT =
 function generateFallbackResponse(userPrompt: string): string {
   const p = userPrompt.toLowerCase();
 
-  if (p.includes("ton") && (p.includes("deploy") || p.includes("contract"))) {
-    return `To deploy a smart contract on TON:
-
-1. **Choose your language**: Write your contract in **FunC** (low-level, high performance) or **Tact** (type-safe, high-level actor-based).
-2. **Setup Blueprint**: Blueprint is the standard development framework for TON.
-\`\`\`bash
-npm create ton@latest my-contract
-cd my-contract
-\`\`\`
-3. **Compile your contract**:
-\`\`\`bash
-npx blueprint build
-\`\`\`
-4. **Deploy via Tonkeeper or Blueprint script**:
-\`\`\`bash
-npx blueprint run
-\`\`\`
-Select your network (testnet or mainnet), choose the deployer (Tonkeeper / mnemonic), and sign the init transaction with Toncoin.
-
-*Tip: Running \`python -m anaxonic.serve\` connects you directly to the live model weights.*`;
-  }
-
-  if (p.includes("bonding curve") || p.includes("defi")) {
-    return `A **bonding curve** is a mathematical formula that defines a cryptographic relationship between token price and token supply.
-
-### Key Characteristics:
-- **Continuous Liquidity**: Users can buy or sell directly against the smart contract at any time without requiring a centralized order book or counterparty.
-- **Deterministic Pricing**: Price is a function of circulating supply: \`P = f(S)\`.
-- **Common Shapes**:
-  - **Linear**: \`P = m · S\` (Predictable slope)
-  - **Exponential / Polynomial**: \`P = a · S^k\` (Early adopters are rewarded, steeper ramp as supply expands)
-  - **Sigmoidal (S-Curve)**: Early incentive → rapid growth phase → asymptotic price stabilization.
-
-### In Smart Contracts:
-Tokens are minted upon deposit of reserve currency (e.g., TON or ETH) according to the integral of the curve, and burned upon redemption for reserve assets.`;
-  }
-
-  if (p.includes("func") && (p.includes("send") || p.includes("transfer") || p.includes("code"))) {
-    return `Here is a standard FunC function to send TON coins to an address:
-
-\`\`\`func
-() send_ton(slice recipient_addr, int amount_nano, int mode) impure inline {
-    var msg = begin_cell()
-        .store_uint(0x18, 6)             ;; bounceable message flags: 0b011000
-        .store_slice(recipient_addr)     ;; destination address
-        .store_coins(amount_nano)        ;; amount in nanoton (1 TON = 1,000,000,000)
-        .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1) ;; default empty message header
-        .end_cell();
-
-    send_raw_message(msg, mode);
-}
-\`\`\`
-
-### Common Modes:
-- \`mode = 1\`: Sender pays transfer fees separately.
-- \`mode = 64\`: Carry all remaining incoming value along with the outbound transfer.
-- \`mode = 128\`: Transfer entire balance of the contract (destroys contract if combined with mode 32).`;
-  }
-
   if (p.includes("weber") || p.includes("model") || p.includes("architecture")) {
     return `**Weber** is a specialized AI model trained for general purpose chatting, natural conversation, and reasoning.
 
@@ -94,9 +35,7 @@ I can help you with:
 - **Open-Ended Conversation & Brainstorming**
 - **Answering Questions & Explaining Concepts**
 - **Writing, Creative Thinking & Drafting**
-- **Problem Solving & Step-by-Step Reasoning**
-
-*(Backend notice: You are currently connected to the edge serving proxy. To run with local GPU weights, launch \`python -m anaxonic.train\` or serving via the repository at [github.com/akacolf/anaxonic-model](https://github.com/akacolf/anaxonic-model)).*`;
+- **Problem Solving & Step-by-Step Reasoning**`;
 }
 
 /**

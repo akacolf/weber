@@ -154,7 +154,7 @@ export default function Navbar() {
               aria-label="Try Weber AI model"
               aria-current={pathname === "/weber" ? "page" : undefined}
             >
-              <span>Try Weber</span>
+              <span>Try Weber, seriously</span>
             </Link>
           ) : (
             <a
@@ -164,7 +164,7 @@ export default function Navbar() {
               className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium border border-border/80 bg-secondary/50 text-foreground hover:bg-secondary hover:border-border active:scale-95 transition-all duration-150 select-none shadow-sm"
               aria-label="Try Weber AI model (opens in a new tab)"
             >
-              <span>Try Weber</span>
+              <span>Try Weber, seriously</span>
             </a>
           )}
 
@@ -278,7 +278,7 @@ export default function Navbar() {
                           aria-label="Try Weber AI model"
                           aria-current={pathname === "/weber" ? "page" : undefined}
                         >
-                          <span>Try Weber</span>
+                          <span>Try Weber, seriously</span>
                         </Link>
                       ) : (
                         <a
@@ -289,7 +289,7 @@ export default function Navbar() {
                           className="flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium border border-border/80 bg-secondary/60 text-foreground hover:bg-secondary active:scale-95 transition-all shadow-sm select-none"
                           aria-label="Try Weber AI model (opens in a new tab)"
                         >
-                          <span>Try Weber</span>
+                          <span>Try Weber, seriously</span>
                         </a>
                       )}
 

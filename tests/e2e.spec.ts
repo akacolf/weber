@@ -954,7 +954,7 @@ test.describe('Weber Model Serving (/weber) tests', () => {
     // Verify top bar buttons (homepage back link exists, new chat is only in sidebar)
     const topBar = page.locator('div.sticky.top-0');
     await expect(topBar.getByRole('button', { name: /New chat/i })).not.toBeVisible();
-    await expect(topBar.getByRole('link', { name: /Back to my homepage/i })).toBeVisible();
+    await expect(topBar.getByRole('link', { name: /Back to homepage/i })).toBeVisible();
 
     // Verify placeholder conversations in sidebar are deleted
     await expect(sidebar.getByText('Deploy Jetton Token on TON')).not.toBeVisible();
