@@ -513,7 +513,7 @@ export default function WeberChat() {
           // Manually stopped by user
         } else {
           const errorMsg =
-            "I encountered an issue connecting to the inference server. Please ensure the backend is running (`python -m anaxonic.serve`) or retry.";
+            "I encountered an issue connecting to the inference server. Please try again in a moment.";
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMsgId

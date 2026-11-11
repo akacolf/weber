@@ -6,9 +6,10 @@ interface ChatMessage {
 }
 
 const SYSTEM_PROMPT =
-  "You are Weber, a specialized AI model trained for general purpose chatting and conversation. " +
-  "You are helpful, thoughtful, concise, and engaging. " +
-  "Answer directly, naturally, and accurately. Say when you are unsure rather than guessing.";
+  "You are Weber, an intelligent conversational AI created by Khalid (Colf). " +
+  "You are thoughtful, direct, articulate, and engaging. " +
+  "Speak naturally with personality, avoid repetitive AI clichés or verbose filler, and answer accurately. " +
+  "State clearly when you are unsure rather than guessing.";
 
 /**
  * Fallback knowledge responder when local PyTorch/FastAPI backend is offline
@@ -47,7 +48,12 @@ export async function GET() {
     process.env.ANAXONIC_MODEL_URL ||
     process.env.OPENAI_BASE_URL ||
     "http://localhost:8000/v1";
-  const model = process.env.MODEL_NAME || "weber";
+  const apiKey =
+    process.env.WEBER_MODEL_API_KEY ||
+    process.env.ANAXONIC_MODEL_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    "";
+  const model = process.env.MODEL_NAME || "llama-3.2-3b-preview";
 
   let isConnected = false;
   let responseTime = 0;
@@ -55,18 +61,35 @@ export async function GET() {
   try {
     const start = Date.now();
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1200);
+    const timeout = setTimeout(() => controller.abort(), 2500);
 
-    const healthUrl = baseURL.endsWith("/v1")
-      ? baseURL.replace(/\/v1$/, "/")
-      : `${baseURL}/`;
+    const headers: Record<string, string> = {};
+    if (apiKey && apiKey !== "none") {
+      headers.Authorization = `Bearer ${apiKey}`;
+    }
 
-    const res = await fetch(healthUrl, {
+    // Attempt standard OpenAI-compatible /models check first
+    const checkUrl = `${baseURL.replace(/\/$/, "")}/models`;
+    let res = await fetch(checkUrl, {
+      headers,
       signal: controller.signal,
       cache: "no-store",
-    });
+    }).catch(() => null);
+
+    // Fall back to root path check if /models was not found
+    if (!res || !res.ok) {
+      const rootUrl = baseURL.endsWith("/v1")
+        ? baseURL.replace(/\/v1$/, "/")
+        : `${baseURL}/`;
+      res = await fetch(rootUrl, {
+        headers,
+        signal: controller.signal,
+        cache: "no-store",
+      }).catch(() => null);
+    }
+
     clearTimeout(timeout);
-    if (res.ok) {
+    if (res && res.ok) {
       isConnected = true;
       responseTime = Date.now() - start;
     }
@@ -114,13 +137,13 @@ export async function POST(req: NextRequest) {
       process.env.ANAXONIC_MODEL_API_KEY ||
       process.env.OPENAI_API_KEY ||
       "none";
-    const model = process.env.MODEL_NAME || "weber";
+    const model = process.env.MODEL_NAME || "llama-3.2-3b-preview";
 
     // Attempt to query the backend server
     let backendStream: ReadableStream<Uint8Array> | null = null;
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3500);
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
       const res = await fetch(`${baseURL}/chat/completions`, {
         method: "POST",
@@ -144,9 +167,12 @@ export async function POST(req: NextRequest) {
 
       if (res.ok && res.body) {
         backendStream = res.body;
+      } else {
+        const errDetail = await res.text().catch(() => "");
+        console.warn(`[Weber API] Inference backend returned status ${res.status}: ${errDetail}`);
       }
-    } catch {
-      // Backend is unreachable; will use fallback stream below
+    } catch (fetchErr) {
+      console.warn("[Weber API] Connection to inference server timed out or failed:", fetchErr);
       backendStream = null;
     }
 
