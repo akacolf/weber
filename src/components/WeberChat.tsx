@@ -10,7 +10,6 @@ import {
   MessageSquare,
   Trash2,
   ArrowLeft,
-  Terminal,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -342,19 +341,14 @@ export default function WeberChat() {
 
     toast.custom(
       () => (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-900/95 dark:bg-neutral-100/95 text-neutral-100 dark:text-neutral-900 shadow-2xl border border-neutral-700/60 dark:border-neutral-300 font-mono text-xs backdrop-blur-md whitespace-nowrap">
-          <Terminal className="h-3.5 w-3.5 text-emerald-400 dark:text-emerald-600 shrink-0" />
-          <span className="text-emerald-400 dark:text-emerald-600 font-bold">$</span>
-          <span className="font-semibold tracking-wide">clear</span>
-          <span className="inline-block w-1.5 h-3.5 bg-emerald-400 dark:bg-emerald-600 align-middle animate-pulse" />
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-600 font-sans ml-1 pl-1.5 border-l border-neutral-700/80 dark:border-neutral-300 uppercase tracking-wider font-medium">
-            chat cleared
-          </span>
+        <div className="w-fit mx-auto flex items-center justify-center px-4 py-2 rounded-full bg-white dark:bg-black text-black dark:text-white shadow-md border border-neutral-200 dark:border-neutral-800 text-xs font-mono font-medium tracking-tight whitespace-nowrap select-none">
+          chat cleared
         </div>
       ),
       {
         id: "weber-clear-chat",
-        duration: 2200,
+        duration: 2000,
+        position: "top-center",
       }
     );
   }, [activeId, conversations, persistConversations]);
