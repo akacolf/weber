@@ -66,6 +66,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { WeberLogo } from "@/components/WeberLogo";
 import { Badge } from "@/components/ui/badge";
+import { MathRenderer } from "@/components/MathRenderer";
 import { cn } from "@/lib/utils";
 
 export interface Message {
@@ -553,7 +554,123 @@ export default function WeberChat() {
     return { thinking, isThinkingActive, message };
   };
 
-  // Render markdown helper (fenced code, bold, lists, headers)
+  const INLINE_REGEX_SOURCE =
+    "(\\$\\$(?:\\\\.|[^$])+\\$\\$|\\\\\\[[\\s\\S]+?\\\\\\]|(?<!\\\\)\\$(?!\\s)(?:\\\\.|[^$\\n])+?(?<!\\s)(?<!\\\\)\\$|\\\\\\([\\s\\S]+?\\\\\\)|\\`[^\\`]+\\`|\\[[^\\]]+\\]\\([^)]+\\)|\\*\\*[^*]+\\*\\*|(?<!\\*)\\*[^*]+\\*(?!\\*)|~~[^~]+~~)";
+
+  const renderInline = (
+    text: string,
+    keyPrefix: string = "il"
+  ): React.ReactNode[] => {
+    if (!text) return [];
+    const regex = new RegExp(INLINE_REGEX_SOURCE, "g");
+    const nodes: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let idx = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        nodes.push(text.slice(lastIndex, match.index));
+      }
+      const token = match[0];
+      const key = `${keyPrefix}-${idx++}`;
+
+      if (token.startsWith("$$") && token.endsWith("$$")) {
+        nodes.push(
+          <MathRenderer
+            key={key}
+            math={token.slice(2, -2).trim()}
+            block={true}
+          />
+        );
+      } else if (token.startsWith("\\[") && token.endsWith("\\]")) {
+        nodes.push(
+          <MathRenderer
+            key={key}
+            math={token.slice(2, -2).trim()}
+            block={true}
+          />
+        );
+      } else if (token.startsWith("$") && token.endsWith("$")) {
+        nodes.push(
+          <MathRenderer
+            key={key}
+            math={token.slice(1, -1).trim()}
+            block={false}
+          />
+        );
+      } else if (token.startsWith("\\(") && token.endsWith("\\)")) {
+        nodes.push(
+          <MathRenderer
+            key={key}
+            math={token.slice(2, -2).trim()}
+            block={false}
+          />
+        );
+      } else if (token.startsWith("`") && token.endsWith("`")) {
+        nodes.push(
+          <code
+            key={key}
+            className="px-1.5 py-0.5 rounded bg-muted/70 text-foreground font-mono text-[12px] border border-border/40 select-text"
+          >
+            {token.slice(1, -1)}
+          </code>
+        );
+      } else if (
+        token.startsWith("[") &&
+        token.includes("](") &&
+        token.endsWith(")")
+      ) {
+        const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (linkMatch) {
+          const label = linkMatch[1];
+          const href = linkMatch[2];
+          nodes.push(
+            <a
+              key={key}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline underline-offset-4 hover:opacity-80 transition-opacity"
+            >
+              {renderInline(label, `${key}-l`)}
+            </a>
+          );
+        } else {
+          nodes.push(token);
+        }
+      } else if (token.startsWith("**") && token.endsWith("**")) {
+        nodes.push(
+          <strong key={key} className="font-semibold text-foreground">
+            {renderInline(token.slice(2, -2), `${key}-b`)}
+          </strong>
+        );
+      } else if (token.startsWith("*") && token.endsWith("*")) {
+        nodes.push(
+          <em key={key} className="italic text-foreground/90">
+            {renderInline(token.slice(1, -1), `${key}-em`)}
+          </em>
+        );
+      } else if (token.startsWith("~~") && token.endsWith("~~")) {
+        nodes.push(
+          <del key={key} className="line-through text-muted-foreground">
+            {renderInline(token.slice(2, -2), `${key}-del`)}
+          </del>
+        );
+      } else {
+        nodes.push(token);
+      }
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      nodes.push(text.slice(lastIndex));
+    }
+
+    return nodes;
+  };
+
+  // Render markdown helper (fenced code, LaTeX math, bold, lists, tables, headers, dividers)
   const renderMessageContent = (content: string) => {
     const lines = content.split("\n");
     const elements: React.ReactNode[] = [];
@@ -561,6 +678,7 @@ export default function WeberChat() {
 
     while (i < lines.length) {
       const line = lines[i];
+      const trimmed = line.trim();
 
       // Code Block with shadcn CodeBlock primitive
       if (line.startsWith("```")) {
@@ -595,15 +713,153 @@ export default function WeberChat() {
         continue;
       }
 
-      // Headings
-      if (line.startsWith("### ")) {
+      // Display Math Block ($$ ... $$ or \[ ... \]) on a single line
+      if (
+        (trimmed.startsWith("$$") && trimmed.endsWith("$$") && trimmed.length > 4) ||
+        (trimmed.startsWith("\\[") && trimmed.endsWith("\\]") && trimmed.length > 4)
+      ) {
+        const math = trimmed.startsWith("\\[")
+          ? trimmed.slice(2, -2)
+          : trimmed.slice(2, -2);
         elements.push(
-          <h4
-            key={i}
-            className="font-semibold text-sm text-foreground mt-3 mb-1 tracking-tight"
+          <MathRenderer
+            key={`math-block-${i}`}
+            math={math.trim()}
+            block={true}
+          />
+        );
+        i++;
+        continue;
+      }
+
+      // Display Math Block across multiple lines ($$ or \[)
+      if (trimmed === "$$" || (trimmed.startsWith("$$") && !trimmed.endsWith("$$"))) {
+        const mathLines: string[] = [];
+        const startMath = trimmed.slice(2).trim();
+        if (startMath) mathLines.push(startMath);
+        i++;
+        while (i < lines.length && !lines[i].trim().endsWith("$$")) {
+          mathLines.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length) {
+          const endMath = lines[i].trim().slice(0, -2).trim();
+          if (endMath) mathLines.push(endMath);
+          i++;
+        }
+        elements.push(
+          <MathRenderer
+            key={`math-multi-${i}`}
+            math={mathLines.join("\n")}
+            block={true}
+          />
+        );
+        continue;
+      }
+
+      if (trimmed === "\\[" || (trimmed.startsWith("\\[") && !trimmed.endsWith("\\]"))) {
+        const mathLines: string[] = [];
+        const startMath = trimmed.slice(2).trim();
+        if (startMath) mathLines.push(startMath);
+        i++;
+        while (i < lines.length && !lines[i].trim().endsWith("\\]")) {
+          mathLines.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length) {
+          const endMath = lines[i].trim().slice(0, -2).trim();
+          if (endMath) mathLines.push(endMath);
+          i++;
+        }
+        elements.push(
+          <MathRenderer
+            key={`math-multi-bracket-${i}`}
+            math={mathLines.join("\n")}
+            block={true}
+          />
+        );
+        continue;
+      }
+
+      // Horizontal rule (--- or *** or ___)
+      if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+        elements.push(
+          <hr
+            key={`hr-${i}`}
+            className="my-3.5 border-t border-border/50"
+          />
+        );
+        i++;
+        continue;
+      }
+
+      // Markdown Tables
+      if (
+        trimmed.startsWith("|") &&
+        trimmed.endsWith("|") &&
+        i + 1 < lines.length &&
+        /^\|[-:\s|]+\|$/.test(lines[i + 1].trim())
+      ) {
+        const parseRow = (rowStr: string) =>
+          rowStr
+            .trim()
+            .replace(/^\||\|$/g, "")
+            .split("|")
+            .map((c) => c.trim());
+
+        const headers = parseRow(trimmed);
+        i += 2; // skip header and delimiter lines
+        const rows: string[][] = [];
+        while (
+          i < lines.length &&
+          lines[i].trim().startsWith("|") &&
+          lines[i].trim().endsWith("|")
+        ) {
+          rows.push(parseRow(lines[i]));
+          i++;
+        }
+
+        elements.push(
+          <div
+            key={`tbl-${i}`}
+            className="my-3 overflow-x-auto rounded-lg border border-border/60 bg-muted/10 shadow-xs"
           >
-            {line.slice(4)}
-          </h4>
+            <table className="w-full text-xs sm:text-sm text-left">
+              <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
+                <tr>
+                  {headers.map((h, hIdx) => (
+                    <th key={hIdx} className="py-2 px-3 text-foreground font-medium">
+                      {renderInline(h, `th-${i}-${hIdx}`)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/30">
+                {rows.map((row, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-muted/20 transition-colors">
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx} className="py-2 px-3 text-foreground/90">
+                        {renderInline(cell, `td-${i}-${rIdx}-${cIdx}`)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+        continue;
+      }
+
+      // Headings
+      if (line.startsWith("# ")) {
+        elements.push(
+          <h2
+            key={i}
+            className="font-bold text-lg text-foreground mt-4 mb-2 tracking-tight"
+          >
+            {renderInline(line.slice(2), `h1-${i}`)}
+          </h2>
         );
         i++;
         continue;
@@ -614,18 +870,60 @@ export default function WeberChat() {
             key={i}
             className="font-bold text-base text-foreground mt-4 mb-1.5 tracking-tight"
           >
-            {line.slice(3)}
+            {renderInline(line.slice(3), `h2-${i}`)}
           </h3>
         );
         i++;
         continue;
       }
+      if (line.startsWith("### ")) {
+        elements.push(
+          <h4
+            key={i}
+            className="font-semibold text-sm text-foreground mt-3 mb-1 tracking-tight"
+          >
+            {renderInline(line.slice(4), `h3-${i}`)}
+          </h4>
+        );
+        i++;
+        continue;
+      }
+      if (line.startsWith("#### ")) {
+        elements.push(
+          <h5
+            key={i}
+            className="font-semibold text-xs uppercase tracking-wider text-muted-foreground mt-2.5 mb-1"
+          >
+            {renderInline(line.slice(5), `h4-${i}`)}
+          </h5>
+        );
+        i++;
+        continue;
+      }
 
-      // Unordered lists
-      if (line.match(/^[-*]\s+/)) {
+      // Blockquotes
+      if (line.startsWith("> ")) {
+        const quoteLines: string[] = [];
+        while (i < lines.length && lines[i].startsWith("> ")) {
+          quoteLines.push(lines[i].slice(2));
+          i++;
+        }
+        elements.push(
+          <blockquote
+            key={`bq-${i}`}
+            className="border-l-2 border-primary/60 pl-3 my-2 text-sm italic text-muted-foreground bg-muted/15 py-1.5 pr-2 rounded-r"
+          >
+            {renderInline(quoteLines.join(" "), `bq-c-${i}`)}
+          </blockquote>
+        );
+        continue;
+      }
+
+      // Unordered lists (- or * or • or \u2022)
+      if (trimmed.match(/^([*•\u2022-]\s+)/)) {
         const listItems: string[] = [];
-        while (i < lines.length && lines[i].match(/^[-*]\s+/)) {
-          listItems.push(lines[i].replace(/^[-*]\s+/, ""));
+        while (i < lines.length && lines[i].trim().match(/^([*•\u2022-]\s+)/)) {
+          listItems.push(lines[i].trim().replace(/^([*•\u2022-]\s+)/, ""));
           i++;
         }
         elements.push(
@@ -635,7 +933,7 @@ export default function WeberChat() {
           >
             {listItems.map((item, idx) => (
               <li key={idx} className="text-foreground/90">
-                {renderInline(item)}
+                {renderInline(item, `ul-${i}-${idx}`)}
               </li>
             ))}
           </ul>
@@ -643,11 +941,11 @@ export default function WeberChat() {
         continue;
       }
 
-      // Numbered lists
-      if (line.match(/^\d+\.\s+/)) {
+      // Numbered lists (1. or 1))
+      if (trimmed.match(/^\d+[.)]\s+/)) {
         const listItems: string[] = [];
-        while (i < lines.length && lines[i].match(/^\d+\.\s+/)) {
-          listItems.push(lines[i].replace(/^\d+\.\s+/, ""));
+        while (i < lines.length && lines[i].trim().match(/^\d+[.)]\s+/)) {
+          listItems.push(lines[i].trim().replace(/^\d+[.)]\s+/, ""));
           i++;
         }
         elements.push(
@@ -657,7 +955,7 @@ export default function WeberChat() {
           >
             {listItems.map((item, idx) => (
               <li key={idx} className="text-foreground/90">
-                {renderInline(item)}
+                {renderInline(item, `ol-${i}-${idx}`)}
               </li>
             ))}
           </ol>
@@ -666,7 +964,7 @@ export default function WeberChat() {
       }
 
       // Blank line
-      if (line.trim() === "") {
+      if (trimmed === "") {
         i++;
         continue;
       }
@@ -677,37 +975,13 @@ export default function WeberChat() {
           key={i}
           className="text-sm leading-relaxed text-foreground/90 mb-2 last:mb-0"
         >
-          {renderInline(line)}
+          {renderInline(line, `p-${i}`)}
         </p>
       );
       i++;
     }
 
     return elements;
-  };
-
-  const renderInline = (text: string) => {
-    const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith("`") && part.endsWith("`")) {
-        return (
-          <code
-            key={index}
-            className="px-1.5 py-0.5 rounded bg-muted/70 text-foreground font-mono text-[12px] border border-border/40"
-          >
-            {part.slice(1, -1)}
-          </code>
-        );
-      }
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return (
-          <strong key={index} className="font-semibold text-foreground">
-            {part.slice(2, -2)}
-          </strong>
-        );
-      }
-      return part;
-    });
   };
 
   const activeConv = conversations.find((c) => c.id === activeId);
@@ -937,9 +1211,9 @@ export default function WeberChat() {
                                   )}
                                 >
                                   {isUser ? (
-                                    <p className="whitespace-pre-wrap break-words leading-relaxed">
-                                      {msg.content}
-                                    </p>
+                                    <div className="whitespace-pre-wrap break-words leading-relaxed">
+                                      {renderInline(msg.content, `usr-${msg.id}`)}
+                                    </div>
                                   ) : (
                                     <div>
                                       {msg.content ? (

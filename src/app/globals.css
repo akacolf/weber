@@ -210,4 +210,29 @@
   }
 }
 
+/* KaTeX mathematical typography */
+.katex {
+  color: inherit !important;
+  text-rendering: optimizeLegibility;
+}
+
+.katex-display {
+  margin: 0.25rem 0 !important;
+  text-align: center;
+}
+
+.katex .katex-html {
+  overflow-x: visible;
+}
+
+.katex svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.katex-error {
+  color: var(--color-destructive, #ef4444) !important;
+  border-bottom: 1px dotted currentColor;
+}
+
 

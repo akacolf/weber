@@ -1072,6 +1072,72 @@ test.describe('Weber Model Serving (/weber) tests', () => {
       expect(Math.abs(pillCenter - headingCenter)).toBeLessThanOrEqual(2);
     }
   });
+
+  test('Weber chat renders mathematical expressions and square roots with KaTeX', async ({ page }) => {
+    await page.goto('/weber');
+
+    // Inject conversation with formulas and square roots
+    await page.evaluate(() => {
+      const conv = [
+        {
+          id: 'test-math-conv',
+          title: 'SCR Formulas & Math',
+          createdAt: new Date().toISOString(),
+          messages: [
+            {
+              id: 'm1',
+              role: 'user',
+              content: 'Can you show me the SCR load formulas and square root equations?',
+              timestamp: '11:50 PM',
+            },
+            {
+              id: 'm2',
+              role: 'assistant',
+              content: `Here are the essential formulas:
+
+**1. DC Load Line & Holding Current**
+To keep an SCR latched ON, the current must stay above the Holding Current ($I_H$).
+$$ I_{load} > I_H $$
+Where:
+$$ I_{load} = \\frac{V_{source} - V_{drop}}{R_{load}} $$
+• $V_{drop}$: The voltage drop across the thyristor when ON.
+• $R_{load}$: The resistance of the load.
+---
+**2. Square Root and Resonance Formulas**
+RMS voltage with square root:
+$$ V_{rms} = \\frac{V_m}{\\sqrt{2}} $$
+Resonance frequency:
+$$ f_0 = \\frac{1}{2\\pi \\sqrt{LC}} $$
+Quadratic solution: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$ and inline root $\\sqrt{x^2 + y^2}$.`,
+              timestamp: '11:51 PM',
+            },
+          ],
+        },
+      ];
+      localStorage.setItem('weber_conversations_v2', JSON.stringify(conv));
+    });
+
+    await page.reload();
+
+    // Click the conversation from the sidebar to make it active
+    const convBtn = page.getByRole('button', { name: 'SCR Formulas & Math' });
+    await expect(convBtn).toBeVisible();
+    await convBtn.click();
+
+    // Verify KaTeX math elements are rendered
+    const katexElements = page.locator('.katex');
+    await expect(katexElements.first()).toBeVisible();
+    expect(await katexElements.count()).toBeGreaterThanOrEqual(6);
+
+    // Verify square root elements (radical svg / sqrt mord) are present
+    const sqrtElements = page.locator('.katex .sqrt');
+    expect(await sqrtElements.count()).toBeGreaterThanOrEqual(4);
+
+    // Verify raw unparsed dollar blocks do not appear as text
+    await expect(page.locator('text="$$ I_{load} > I_H $$"')).not.toBeVisible();
+    await expect(page.locator('text="($I_H$)"')).not.toBeVisible();
+    await expect(page.locator('text="\\frac{V_{source} - V_{drop}}{R_{load}}"')).not.toBeVisible();
+  });
 });
 
 
