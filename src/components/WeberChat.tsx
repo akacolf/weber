@@ -11,7 +11,7 @@ import {
   Trash2,
   ArrowLeft,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +28,7 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   MessageScrollerProvider,
@@ -62,6 +63,7 @@ import {
 } from "@/components/ui/trace";
 import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
+import { WeberLogo } from "@/components/WeberLogo";
 import { cn } from "@/lib/utils";
 
 export interface Message {
@@ -80,6 +82,68 @@ export interface Conversation {
 
 const STORAGE_KEY = "weber_conversations_v2";
 const emptySubscribe = () => () => {};
+
+interface WeberTopChatBarProps {
+  activeTitle: string;
+  hasMessages: boolean;
+}
+
+function WeberTopChatBar({ activeTitle, hasMessages }: WeberTopChatBarProps) {
+  const { open, openMobile, isMobile } = useSidebar();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // When mounted: if mobile, show logo when openMobile is false; if desktop, show logo when open is false.
+  // Before mount: sidebar is open by default on desktop (defaultOpen: true), so showHeaderLogo is false.
+  const isSidebarOpen = mounted ? (isMobile ? openMobile : open) : true;
+  const showHeaderLogo = !isSidebarOpen;
+
+  return (
+    <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-20 gap-2">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <SidebarTrigger className="h-8 w-8 hover:bg-muted cursor-pointer shrink-0" />
+        {showHeaderLogo && (
+          <Link
+            href="/weber"
+            className="flex items-center gap-2 select-none hover:opacity-80 transition-opacity shrink-0 animate-in fade-in duration-200"
+            title="Weber AI"
+            aria-label="Weber AI"
+          >
+            <WeberLogo className="h-5 sm:h-5.5 w-auto text-foreground" />
+          </Link>
+        )}
+        {hasMessages && (
+          <>
+            {showHeaderLogo && (
+              <span className="text-muted-foreground/40 font-mono text-xs hidden sm:inline">•</span>
+            )}
+            <span className="text-xs font-mono font-medium text-muted-foreground truncate max-w-[140px] sm:max-w-md">
+              {activeTitle}
+            </span>
+          </>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <Link
+          href="/"
+          title="Back to my homepage"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "h-8 px-2.5 sm:px-3 text-xs font-medium text-muted-foreground hover:text-foreground border-border/70 hover:border-border hover:bg-muted/50 transition-colors group cursor-pointer whitespace-nowrap"
+          )}
+        >
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+          <span>Back to my homepage</span>
+        </Link>
+        <ModeToggle />
+      </div>
+    </div>
+  );
+}
 
 export default function WeberChat() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -594,16 +658,14 @@ export default function WeberChat() {
       {/* ----------------- PAST CONVERSATIONS SIDEBAR ----------------- */}
       <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/70">
         <SidebarHeader className="p-3 border-b border-sidebar-border/50 gap-2.5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center px-1 py-1">
             <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group select-none"
-              title="Return to main portfolio"
+              href="/weber"
+              className="inline-flex items-center hover:opacity-80 transition-opacity"
+              title="Weber AI"
             >
-              <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-              <span>Portfolio</span>
+              <WeberLogo className="h-5 w-auto text-foreground" />
             </Link>
-            <ModeToggle />
           </div>
 
           <Button
@@ -697,16 +759,7 @@ export default function WeberChat() {
       {/* ----------------- MAIN CHAT INSET ----------------- */}
       <SidebarInset className="relative flex flex-col flex-1 h-dvh max-h-dvh overflow-hidden bg-background">
         {/* Top Chat Bar */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-20">
-          <div className="flex items-center gap-2 min-w-0">
-            <SidebarTrigger className="h-8 w-8 hover:bg-muted cursor-pointer" />
-            {messages.length > 0 && (
-              <span className="text-xs font-mono font-medium text-muted-foreground truncate max-w-[200px] sm:max-w-md">
-                {activeTitle}
-              </span>
-            )}
-          </div>
-        </div>
+        <WeberTopChatBar activeTitle={activeTitle} hasMessages={messages.length > 0} />
 
         {/* Ambient background glows */}
         <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-sky-500/[0.04] dark:bg-sky-500/[0.07] blur-[150px] rounded-full pointer-events-none -z-10" />
