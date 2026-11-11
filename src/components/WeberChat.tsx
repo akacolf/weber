@@ -12,7 +12,7 @@ import {
   ArrowLeft,
   Terminal,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sidebar,
@@ -159,7 +159,6 @@ export default function WeberChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [activeCommand, setActiveCommand] = useState<{ text: string; id: number } | null>(null);
   const [isClearingMessages, setIsClearingMessages] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -310,10 +309,14 @@ export default function WeberChat() {
     setIsLoading(false);
   };
 
-  const isClearCommand = (val: string) => {
-    const c = val.trim().toLowerCase();
-    return c === "clear" || c === "/clear" || c === '"clear"';
-  };
+  const isClearCommand = useCallback(
+    (val: string) => {
+      if (messages.length === 0) return false;
+      const c = val.trim().toLowerCase();
+      return c === "clear" || c === "/clear" || c === '"clear"';
+    },
+    [messages.length]
+  );
 
   const handleClearCommand = useCallback(() => {
     if (abortControllerRef.current) {
@@ -325,7 +328,6 @@ export default function WeberChat() {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
-    setActiveCommand({ text: "clear", id: Date.now() });
     setIsClearingMessages(true);
 
     setTimeout(() => {
@@ -338,20 +340,36 @@ export default function WeberChat() {
       setIsClearingMessages(false);
     }, 280);
 
-    setTimeout(() => {
-      setActiveCommand(null);
-    }, 1600);
+    toast.custom(
+      () => (
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-900/95 dark:bg-neutral-100/95 text-neutral-100 dark:text-neutral-900 shadow-2xl border border-neutral-700/60 dark:border-neutral-300 font-mono text-xs backdrop-blur-md whitespace-nowrap">
+          <Terminal className="h-3.5 w-3.5 text-emerald-400 dark:text-emerald-600 shrink-0" />
+          <span className="text-emerald-400 dark:text-emerald-600 font-bold">$</span>
+          <span className="font-semibold tracking-wide">clear</span>
+          <span className="inline-block w-1.5 h-3.5 bg-emerald-400 dark:bg-emerald-600 align-middle animate-pulse" />
+          <span className="text-[10px] text-neutral-400 dark:text-neutral-600 font-sans ml-1 pl-1.5 border-l border-neutral-700/80 dark:border-neutral-300 uppercase tracking-wider font-medium">
+            chat cleared
+          </span>
+        </div>
+      ),
+      {
+        id: "weber-clear-chat",
+        duration: 2200,
+      }
+    );
   }, [activeId, conversations, persistConversations]);
 
   const sendMessage = useCallback(
     async (textToSend?: string) => {
       const text = (textToSend ?? input).trim();
-      if (!text || isLoading) return;
+      if (!text) return;
 
       if (isClearCommand(text)) {
         handleClearCommand();
         return;
       }
+
+      if (isLoading) return;
 
       const userMsg: Message = {
         id: `user-${Date.now()}`,
@@ -517,7 +535,7 @@ export default function WeberChat() {
         abortControllerRef.current = null;
       }
     },
-    [activeId, conversations, handleClearCommand, input, isLoading, messages, persistConversations, scrollToBottom]
+    [activeId, conversations, handleClearCommand, input, isClearCommand, isLoading, messages, persistConversations, scrollToBottom]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -815,32 +833,6 @@ export default function WeberChat() {
         {/* Top Chat Bar */}
         <WeberTopChatBar activeTitle={activeTitle} hasMessages={messages.length > 0} />
 
-        {/* Global Floating Command Badge */}
-        <AnimatePresence>
-          {activeCommand && (
-            <motion.div
-              key={activeCommand.id}
-              initial={{ opacity: 0, y: 16, scale: 0.94 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, filter: "blur(6px)" }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="pointer-events-none fixed bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-900/95 dark:bg-neutral-100/95 text-neutral-100 dark:text-neutral-900 shadow-2xl border border-neutral-700/60 dark:border-neutral-300 font-mono text-xs backdrop-blur-md whitespace-nowrap"
-            >
-              <Terminal className="h-3.5 w-3.5 text-emerald-400 dark:text-emerald-600 shrink-0" />
-              <span className="text-emerald-400 dark:text-emerald-600 font-bold">$</span>
-              <span className="font-semibold tracking-wide">clear</span>
-              <motion.span
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ repeat: Infinity, duration: 0.7 }}
-                className="inline-block w-1.5 h-3.5 bg-emerald-400 dark:bg-emerald-600 align-middle"
-              />
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-600 font-sans ml-1 pl-1.5 border-l border-neutral-700/80 dark:border-neutral-300 uppercase tracking-wider font-medium">
-                chat cleared
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Ambient background glows */}
         <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-sky-500/[0.04] dark:bg-sky-500/[0.07] blur-[150px] rounded-full pointer-events-none -z-10" />
         <div className="absolute bottom-12 right-1/4 w-[420px] h-[320px] bg-indigo-500/[0.03] dark:bg-indigo-500/[0.05] blur-[140px] rounded-full pointer-events-none -z-10" />
@@ -872,8 +864,7 @@ export default function WeberChat() {
                 <div
                   className={cn(
                     "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30 backdrop-blur-xl transition-all shadow-xl",
-                    input.includes("\n") ? "items-end" : "items-center",
-                    isClearCommand(input) && "border-emerald-500/50 focus-within:border-emerald-500 focus-within:ring-emerald-500/30"
+                    input.includes("\n") ? "items-end" : "items-center"
                   )}
                 >
                   <textarea
@@ -884,30 +875,15 @@ export default function WeberChat() {
                     placeholder="Ask me anything"
                     rows={1}
                     autoFocus
-                    className={cn(
-                      "flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-1.5 px-1 min-h-[24px] max-h-[180px] leading-6 transition-all",
-                      isClearCommand(input) && "font-mono text-emerald-600 dark:text-emerald-400 font-medium tracking-wide"
-                    )}
+                    className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-1.5 px-1 min-h-[24px] max-h-[180px] leading-6 transition-all"
                   />
-
-                  {isClearCommand(input) && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-mono shrink-0 select-none animate-in fade-in duration-150">
-                      <Terminal className="h-3 w-3" />
-                      <span>command</span>
-                    </span>
-                  )}
 
                   <Button
                     type="submit"
                     disabled={!input.trim()}
                     size="icon"
-                    className={cn(
-                      "h-8 w-8 rounded-full shrink-0 text-white transition-all cursor-pointer p-0 shadow-xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed",
-                      isClearCommand(input)
-                        ? "bg-emerald-600 hover:bg-emerald-500"
-                        : "bg-blue-600 hover:bg-blue-500"
-                    )}
-                    title={isClearCommand(input) ? "Execute clear command (Enter)" : "Send message (Enter)"}
+                    className="h-8 w-8 rounded-full shrink-0 text-white transition-all cursor-pointer p-0 shadow-xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500"
+                    title="Send message (Enter)"
                   >
                     <ArrowUp className="h-4 w-4 text-white" />
                   </Button>
@@ -1067,8 +1043,7 @@ export default function WeberChat() {
                 <div
                   className={cn(
                     "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30 backdrop-blur-xl transition-all shadow-lg",
-                    input.includes("\n") ? "items-end" : "items-center",
-                    isClearCommand(input) && "border-emerald-500/50 focus-within:border-emerald-500 focus-within:ring-emerald-500/30"
+                    input.includes("\n") ? "items-end" : "items-center"
                   )}
                 >
                   <textarea
@@ -1083,13 +1058,6 @@ export default function WeberChat() {
                       isClearCommand(input) && "font-mono text-emerald-600 dark:text-emerald-400 font-medium tracking-wide"
                     )}
                   />
-
-                  {isClearCommand(input) && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-mono shrink-0 select-none animate-in fade-in duration-150">
-                      <Terminal className="h-3 w-3" />
-                      <span>command</span>
-                    </span>
-                  )}
 
                   {isLoading ? (
                     <Button
@@ -1107,13 +1075,8 @@ export default function WeberChat() {
                       type="submit"
                       disabled={!input.trim()}
                       size="icon"
-                      className={cn(
-                        "h-8 w-8 rounded-full shrink-0 text-white transition-all cursor-pointer p-0 shadow-xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed",
-                        isClearCommand(input)
-                          ? "bg-emerald-600 hover:bg-emerald-500"
-                          : "bg-blue-600 hover:bg-blue-500"
-                      )}
-                      title={isClearCommand(input) ? "Execute clear command (Enter)" : "Send message (Enter)"}
+                      className="h-8 w-8 rounded-full shrink-0 text-white transition-all cursor-pointer p-0 shadow-xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500"
+                      title={isClearCommand(input) ? "Execute clear (Enter)" : "Send message (Enter)"}
                     >
                       <ArrowUp className="h-4 w-4 text-white" />
                     </Button>

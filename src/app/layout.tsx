@@ -3,6 +3,7 @@ import { Libre_Baskerville, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -55,6 +56,7 @@ export default function RootLayout({
               {children}
             </div>
             <Footer />
+            <Toaster position="bottom-center" />
           </TooltipProvider>
         </ThemeProvider>
       </body>

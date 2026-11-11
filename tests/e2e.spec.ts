@@ -983,7 +983,7 @@ test.describe('Weber Model Serving (/weber) tests', () => {
 
     // The page turns into a conversation: greeting is replaced by conversation thread
     await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).not.toBeVisible();
-    await expect(page.getByRole('paragraph').filter({ hasText: 'How do I deploy a smart' })).toBeVisible();
+    await expect(page.getByRole('paragraph').filter({ hasText: 'How do I deploy a smart' }).first()).toBeVisible();
 
     // The conversation is stored in the sidebar
     await expect(sidebar.getByText(/How do I deploy a smart contract/i)).toBeVisible();
@@ -1003,6 +1003,63 @@ test.describe('Weber Model Serving (/weber) tests', () => {
     await expect(page).toHaveURL(/\/weber$/);
     await expect(page).toHaveTitle('Weber');
     await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).toBeVisible();
+  });
+
+  test('clear command behavior: disabled when no messages, word highlighted and shadcn toast on clear when active', async ({ page }) => {
+    // Mock /api/chat so the test doesn't depend on external network/API latency
+    await page.route('/api/chat', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: 'data: {"text":"Hello! I am Weber."}\n\ndata: [DONE]\n\n',
+      });
+    });
+
+    await page.goto('/weber');
+
+    const textarea = page.getByPlaceholder(/Ask me anything/i);
+    await expect(textarea).toBeVisible();
+
+    // 1. Initial screen with no messages: typing "clear" should NOT trigger clear command
+    await textarea.fill('clear');
+    // Command badge must NOT be visible
+    await expect(page.getByText('command')).not.toBeVisible();
+    // Textarea must NOT be highlighted with emerald color
+    await expect(textarea).not.toHaveClass(/text-emerald/);
+
+    // Clear the input and send a real message to start conversation
+    await textarea.click();
+    await textarea.fill('');
+    await textarea.pressSequentially('Hello Weber');
+    const sendBtn = page.getByRole('button', { name: /Send message/i });
+    await expect(sendBtn).toBeEnabled();
+    await sendBtn.click();
+
+    // Wait for the conversation view to appear
+    await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).not.toBeVisible();
+    await expect(page.getByRole('region', { name: 'Messages' }).getByText('Hello Weber')).toBeVisible();
+
+    // 2. Active conversation: typing "clear" should highlight only the word and have no command badge
+    const activeTextarea = page.getByPlaceholder(/Ask me anything/i);
+    await activeTextarea.click();
+    await activeTextarea.pressSequentially('clear');
+
+    // Command badge must NOT be visible
+    await expect(page.getByText('command')).not.toBeVisible();
+
+    // Word must be highlighted (emerald font)
+    await expect(activeTextarea).toHaveClass(/text-emerald/);
+
+    // 3. Submitting clear command: clears messages and shows shadcn toast
+    await activeTextarea.press('Enter');
+
+    // Initial greeting reappears
+    await expect(page.getByRole('heading', { name: /Hi Human\. What can I do for you today\?/i })).toBeVisible({ timeout: 5000 });
+
+    // Shadcn sonner toast appears with "chat cleared"
+    const toast = page.locator('[data-sonner-toast]');
+    await expect(toast).toBeVisible();
+    await expect(toast.getByText('chat cleared', { exact: false })).toBeVisible();
   });
 });
 
