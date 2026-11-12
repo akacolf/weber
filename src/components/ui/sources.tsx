@@ -50,7 +50,7 @@ function SourcesTrigger({
     <CollapsibleTrigger
       data-slot="sources-trigger"
       className={cn(
-        "group/sources-trigger flex w-fit max-w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 px-1.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50 select-none",
+        "group/sources-trigger flex w-fit max-w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 px-0 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50 select-none",
         className
       )}
       {...props}

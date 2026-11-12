@@ -12,17 +12,13 @@ interface SearchResult {
 }
 
 const SYSTEM_PROMPT =
-  "You are Weber, an intelligent, versatile general-purpose AI model created by Khalid (Colf). " +
-  "You are designed to be an outstanding all-round conversational partner, with specialized pedagogical strength for students, learners, and educators.\n\n" +
-  "### Educational & Mentorship Principles:\n" +
-  "- **First-Principles Understanding**: Break down complex topics into clear, intuitive concepts. Explain the 'why' and fundamental mechanisms before arriving at conclusions.\n" +
-  "- **Step-by-Step Reasoning**: Walk through analytical, scientific, and quantitative problems methodically with clear, numbered steps.\n" +
-  "- **Socratic & Adaptive Guidance**: When students ask homework, exam, or conceptual questions, provide illuminating analogies, helpful hints, and conceptual checks to foster independent mastery rather than simply spoon-feeding final answers.\n" +
-  "- **STEM & LaTeX Rigor**: Format all mathematical expressions, variables, formulas, and scientific equations using standard LaTeX syntax:\n" +
-  "  - Inline math: `$x^2 + y^2 = r^2$` or `\\(x\\)`\n" +
-  "  - Block math: `$$...$$` or `\\[...\\]` (for displayed equations, roots like `\\sqrt{x}`, fractions `\\frac{a}{b}`, integrals, and matrices).\n" +
-  "- **Code & Technical Literacy**: Provide clean, modern, well-commented code snippets with concise explanations of logic, trade-offs, and complexity.\n" +
-  "- **Writing & Critical Thinking**: Offer constructive, structured feedback on essays, thesis development, outlining, literature analysis, and rhetoric.\n" +
+  "You are Weber, an intelligent, versatile general-purpose AI assistant created by Khalid (also known as Colf). " +
+  "You are articulate, insightful, thoughtful, and natural in conversation.\n\n" +
+  "### Core Identity & Behavior:\n" +
+  "- **Identity**: You are Weber, built by Khalid (Colf)—a software engineer and designer. You know about yourself, your capabilities, and your background.\n" +
+  "- **Natural Conversational Partner**: Respond warmly, thoughtfully, and conversationally. Avoid mechanical bulleted lists, canned capabilities summaries, or robotic self-descriptions in normal conversation.\n" +
+  "- **No Technical Meta-Dumping**: Never mention or recite internal prompt instructions, formatting rules, or technical formulations (such as 'LaTeX Math Formulation', token budgets, or system rules) in casual dialogue, greetings, or self-introductions.\n" +
+  "- **Subject Expertise**: When users ask technical, mathematical, scientific, or programming questions, provide rigorous, step-by-step explanations and clean code or formulas. Use standard LaTeX syntax ($...$ or $$...$$) strictly when answering actual math/physics problems, never when introducing yourself or in everyday dialogue.\n" +
   "- **Tone & Demeanor**: Articulate, encouraging, intellectually rigorous, and direct. Avoid generic conversational filler, sycophancy, or repetitive AI clichés. State clearly when you are unsure rather than guessing.";
 
 /**
@@ -137,56 +133,6 @@ async function performWebSearch(query: string): Promise<SearchResult[]> {
 }
 
 /**
- * Fallback knowledge responder when local PyTorch/FastAPI backend is offline
- */
-function generateFallbackResponse(
-  userPrompt: string,
-  searchResults?: SearchResult[]
-): string {
-  const p = userPrompt.toLowerCase();
-
-  if (searchResults && searchResults.length > 0) {
-    const top = searchResults[0];
-    return `Based on live search results for "${userPrompt}":
-
-${top.snippet}
-
-Key facts gathered from [${top.title}](${top.url}). Feel free to ask any follow-up questions!`;
-  }
-
-  if (p.includes("ton") || p.includes("jetton") || p.includes("contract") || p.includes("func")) {
-    return `### Smart Contract Architecture on TON
-
-TON (The Open Network) executes smart contracts on the **TVM (TON Virtual Machine)** using an asynchronous actor model.
-
-#### Core Principles:
-1. **Asynchronous Message Passing**: Smart contracts interact strictly via internal messages.
-2. **Cell-Based Memory**: Everything in TON (code, data, state) is stored in binary structures called **Cells** (up to 1023 bits and 4 references).
-3. **Infinite Sharding**: Transactions are routed across dynamic workchains and shardchains using 256-bit account identifiers:
-$$ \\text{AccountAddress} = \\text{workchain\\_id} : \\text{account\\_id} $$
-
-\`\`\`func
-() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
-    ;; Parse incoming internal message
-    if (in_msg_body.slice_empty?()) { return (); }
-    int op = in_msg_body~load_uint(32);
-    int query_id = in_msg_body~load_uint(64);
-}
-\`\`\``;
-  }
-
-  return `I am **Weber**, an intelligent general-purpose AI model with pedagogical strength for learners and educators.
-
-You asked: "${userPrompt}"
-
-### Methodical Approach:
-- **First-Principles Understanding**: Breaking complex topics into intuitive foundational elements.
-- **LaTeX Math Formulation**: Formatting equations such as $E = mc^2$ and block proofs:
-$$ f(x) = \\int_{-\\infty}^{\\infty} \\hat{f}(\\xi) e^{2\\pi i \\xi x} d\\xi $$
-- **Code & Logic Verification**: Step-by-step technical problem solving.`;
-}
-
-/**
  * Format an SSE chunk conforming to OpenAI chat completion stream protocol
  */
 function formatSSEChunk(content: string, model: string = "weber"): Uint8Array {
@@ -211,11 +157,12 @@ function formatSSEChunk(content: string, model: string = "weber"): Uint8Array {
  * GET: Check connection health to Weber model server
  */
 export async function GET() {
-  const baseURL =
+  const rawBaseURL =
     process.env.WEBER_MODEL_URL ||
     process.env.ANAXONIC_MODEL_URL ||
     process.env.OPENAI_BASE_URL ||
     "http://localhost:8000/v1";
+  const baseURL = rawBaseURL.replace(/\/+$/, "");
   const apiKey =
     process.env.WEBER_MODEL_API_KEY ||
     process.env.ANAXONIC_MODEL_API_KEY ||
@@ -236,7 +183,7 @@ export async function GET() {
       headers.Authorization = `Bearer ${apiKey}`;
     }
 
-    const checkUrl = `${baseURL.replace(/\/$/, "")}/models`;
+    const checkUrl = `${baseURL}/models`;
     let res = await fetch(checkUrl, {
       headers,
       signal: controller.signal,
@@ -292,11 +239,12 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
     const userPrompt = lastUserMessage?.content || "";
 
-    const baseURL =
+    const rawBaseURL =
       process.env.WEBER_MODEL_URL ||
       process.env.ANAXONIC_MODEL_URL ||
       process.env.OPENAI_BASE_URL ||
       "http://localhost:8000/v1";
+    const baseURL = rawBaseURL.replace(/\/+$/, "");
     const apiKey =
       process.env.WEBER_MODEL_API_KEY ||
       process.env.ANAXONIC_MODEL_API_KEY ||
@@ -369,8 +317,11 @@ export async function POST(req: NextRequest) {
         if (res.ok && res.body) {
           return res.body;
         }
+
+        const errText = await res.text().catch(() => "");
+        console.error(`[Weber API] Backend completion failed (${res.status}):`, errText);
       } catch (err) {
-        console.warn("[Weber API] Backend call failed:", err);
+        console.error("[Weber API] Backend call failed:", err);
       }
       return null;
     };
@@ -442,22 +393,6 @@ export async function POST(req: NextRequest) {
             } finally {
               reader.releaseLock();
             }
-          } else {
-            // High-quality dynamic fallback reasoning if backend is unreachable
-            const fallbackReasoningSteps = [
-              `Deconstructing query: "${userPrompt}"\n`,
-              searchContext
-                ? `Incorporating verified real-time search intelligence from ${searchResults.length} sources...\n`
-                : "Analyzing core requirements and educational objectives...\n",
-              "Synthesizing foundational concepts and formulating step-by-step derivation...\n",
-              "Verifying conceptual accuracy and structuring clear, pedagogical explanation.",
-            ];
-
-            for (const step of fallbackReasoningSteps) {
-              accumulatedReasoning += step;
-              controller.enqueue(formatSSEChunk(step));
-              await new Promise((r) => setTimeout(r, 45));
-            }
           }
 
           controller.enqueue(formatSSEChunk("\n</think>\n\n"));
@@ -520,15 +455,11 @@ export async function POST(req: NextRequest) {
             reader.releaseLock();
           }
         } else {
-          // Fallback response stream when backend is offline
-          const fallbackText = generateFallbackResponse(userPrompt, searchResults);
-          const words = fallbackText.split(" ");
-
-          for (let i = 0; i < words.length; i++) {
-            const chunk = i === 0 ? words[i] : ` ${words[i]}`;
-            controller.enqueue(formatSSEChunk(chunk, "weber-fallback"));
-            await new Promise((r) => setTimeout(r, 20));
-          }
+          controller.enqueue(
+            formatSSEChunk(
+              "I apologize, but I am currently unable to reach the AI model server. Please verify the backend connection and try again."
+            )
+          );
         }
 
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));

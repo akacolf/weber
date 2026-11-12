@@ -193,7 +193,7 @@ export default function WeberChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [isClearingMessages, setIsClearingMessages] = useState(false);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
-  const [deepThinkEnabled, setDeepThinkEnabled] = useState(true);
+  const [deepThinkEnabled, setDeepThinkEnabled] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1406,7 +1406,7 @@ export default function WeberChat() {
                                                   key={`reasoning-${msg.id}`}
                                                   isStreaming={parsed.isThinkingActive}
                                                   defaultOpen={false}
-                                                  className="mb-2"
+                                                  className="w-full"
                                                 >
                                                   <ReasoningTrigger />
                                                   <ReasoningContent>

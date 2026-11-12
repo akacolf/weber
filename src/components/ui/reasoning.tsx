@@ -69,12 +69,12 @@ function ReasoningTrigger({
     <CollapsibleTrigger
       data-slot="reasoning-trigger"
       className={cn(
-        "group/reasoning-trigger flex w-fit max-w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 px-1.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50 select-none",
+        "group/reasoning-trigger flex w-fit max-w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 px-0 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50 select-none",
         className
       )}
       {...props}
     >
-      <span className="flex size-4 shrink-0 items-center justify-center text-muted-foreground group-hover/reasoning-trigger:text-foreground transition-colors">
+      <span className="flex size-3.5 shrink-0 items-center justify-center text-muted-foreground group-hover/reasoning-trigger:text-foreground transition-colors">
         {isStreaming ? (
           <Spinner className="size-3.5 text-muted-foreground animate-spin" />
         ) : (
@@ -85,7 +85,7 @@ function ReasoningTrigger({
       <span
         data-slot="reasoning-title"
         className={cn(
-          "min-w-0 truncate text-muted-foreground font-normal"
+          "min-w-0 truncate text-muted-foreground font-normal group-hover/reasoning-trigger:text-foreground transition-colors"
         )}
       >
         {children ?? (
@@ -124,7 +124,7 @@ function ReasoningContent({
     >
       <div
         className={cn(
-          "mt-2 mb-2 ml-2 min-w-0 border-l-2 border-border/60 pl-3 py-1 font-mono text-xs leading-relaxed text-muted-foreground/90 whitespace-pre-wrap break-words selection:bg-foreground/10",
+          "mt-2 mb-2 w-full min-w-0 rounded-xl border border-border/50 bg-background/50 dark:bg-neutral-900/40 p-3 font-mono text-xs leading-relaxed text-muted-foreground/90 whitespace-pre-wrap break-words selection:bg-foreground/10",
           className
         )}
       >
