@@ -10,6 +10,8 @@ import {
   MessageSquare,
   Trash2,
   ArrowLeft,
+  Brain,
+  Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -62,6 +64,33 @@ import {
   TraceLine,
   TraceTitle,
 } from "@/components/ui/trace";
+import {
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+} from "@/components/ui/reasoning";
+import {
+  Sources,
+  SourcesTrigger,
+  SourcesContent,
+  SourcesList,
+  SourceItem,
+} from "@/components/ui/sources";
+import { InlineCitation } from "@/components/ui/inline-citation";
+import {
+  Tool,
+  ToolStatusBadge,
+  ToolArgs,
+  ToolResult,
+} from "@/components/ui/tool";
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputActions,
+  PromptInputTools,
+  PromptInputSubmit,
+} from "@/components/ui/prompt-input";
+import { Artifact, ArtifactHeader, ArtifactContent } from "@/components/ui/artifact";
 import { Spinner } from "@/components/ui/spinner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { WeberLogo } from "@/components/WeberLogo";
@@ -91,7 +120,10 @@ interface WeberTopChatBarProps {
   hasMessages: boolean;
 }
 
-function WeberTopChatBar({ activeTitle, hasMessages }: WeberTopChatBarProps) {
+function WeberTopChatBar({
+  activeTitle,
+  hasMessages,
+}: WeberTopChatBarProps) {
   const { open, openMobile, isMobile } = useSidebar();
   const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false);
 
@@ -160,6 +192,8 @@ export default function WeberChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isClearingMessages, setIsClearingMessages] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [deepThinkEnabled, setDeepThinkEnabled] = useState(true);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -348,7 +382,7 @@ export default function WeberChat() {
       ),
       {
         id: "weber-clear-chat",
-        duration: 2000,
+        duration: 3500,
         position: "top-center",
         className: "w-full flex justify-center",
       }
@@ -436,12 +470,17 @@ export default function WeberChat() {
               role: m.role,
               content: m.content,
             })),
+            deepThink: deepThinkEnabled,
+            webSearch: webSearchEnabled,
           }),
           signal: controller.signal,
         });
 
         if (!response.ok || !response.body) {
-          throw new Error(`Server returned error: ${response.status}`);
+          const errJson = await response.json().catch(() => null);
+          const errDetail =
+            errJson?.error || `Server returned error (${response.status})`;
+          throw new Error(errDetail);
         }
 
         const reader = response.body.getReader();
@@ -531,7 +570,7 @@ export default function WeberChat() {
         abortControllerRef.current = null;
       }
     },
-    [activeId, conversations, handleClearCommand, input, isClearCommand, isLoading, messages, persistConversations, scrollToBottom]
+    [activeId, conversations, deepThinkEnabled, handleClearCommand, input, isClearCommand, isLoading, messages, persistConversations, scrollToBottom, webSearchEnabled]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -625,17 +664,28 @@ export default function WeberChat() {
         if (linkMatch) {
           const label = linkMatch[1];
           const href = linkMatch[2];
-          nodes.push(
-            <a
-              key={key}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary underline underline-offset-4 hover:opacity-80 transition-opacity"
-            >
-              {renderInline(label, `${key}-l`)}
-            </a>
-          );
+          const citeMatch = label.match(/^\^?(\d+)$/);
+          if (citeMatch && /^https?:\/\//i.test(href)) {
+            nodes.push(
+              <InlineCitation
+                key={key}
+                index={citeMatch[1]}
+                url={href}
+              />
+            );
+          } else {
+            nodes.push(
+              <a
+                key={key}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline underline-offset-4 hover:opacity-80 transition-opacity"
+              >
+                {renderInline(label, `${key}-l`)}
+              </a>
+            );
+          }
         } else {
           nodes.push(token);
         }
@@ -679,6 +729,102 @@ export default function WeberChat() {
     while (i < lines.length) {
       const line = lines[i];
       const trimmed = line.trim();
+
+      // Sources block (<sources>...</sources>)
+      if (trimmed.startsWith("<sources>")) {
+        const sourceLines: string[] = [];
+        i++;
+        while (i < lines.length && !lines[i].trim().includes("</sources>")) {
+          sourceLines.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length && lines[i].trim().includes("</sources>")) {
+          i++;
+        }
+        const parsedSources = sourceLines
+          .map((sl) => sl.trim())
+          .filter(Boolean)
+          .map((sl) => {
+            const mdMatch = sl.match(/\[([^\]]+)\]\(([^)]+)\)/);
+            if (mdMatch) {
+              return { title: mdMatch[1], url: mdMatch[2] };
+            }
+            return { url: sl.replace(/^-\s*/, "") };
+          });
+
+        if (parsedSources.length > 0) {
+          elements.push(
+            <Sources key={`sources-${i}`} className="my-2">
+              <SourcesTrigger count={parsedSources.length} />
+              <SourcesContent>
+                <SourcesList>
+                  {parsedSources.map((s, idx) => (
+                    <SourceItem key={`${s.url}-${idx}`} url={s.url} title={s.title} />
+                  ))}
+                </SourcesList>
+              </SourcesContent>
+            </Sources>
+          );
+        }
+        continue;
+      }
+
+      // Tool block (<tool name="..." status="...">...</tool>)
+      if (trimmed.startsWith("<tool")) {
+        const nameMatch = trimmed.match(/name=["']([^"']+)["']/);
+        const statusMatch = trimmed.match(/status=["']([^"']+)["']/);
+        const toolName = nameMatch ? nameMatch[1] : "Tool Execution";
+        const toolStatus = (statusMatch ? statusMatch[1] : "completed") as any;
+
+        const toolLines: string[] = [];
+        i++;
+        while (i < lines.length && !lines[i].trim().includes("</tool>")) {
+          toolLines.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length && lines[i].trim().includes("</tool>")) {
+          i++;
+        }
+
+        const toolBody = toolLines.join("\n").trim();
+        elements.push(
+          <Tool key={`tool-${i}`} name={toolName} status={toolStatus}>
+            {toolBody && <ToolResult result={toolBody} />}
+          </Tool>
+        );
+        continue;
+      }
+
+      // Artifact block (<artifact title="..." type="...">...</artifact>)
+      if (trimmed.startsWith("<artifact")) {
+        const titleMatch = trimmed.match(/title=["']([^"']+)["']/);
+        const typeMatch = trimmed.match(/type=["']([^"']+)["']/);
+        const artTitle = titleMatch ? titleMatch[1] : "Artifact";
+        const artType = typeMatch ? typeMatch[1] : "code";
+
+        const artLines: string[] = [];
+        i++;
+        while (i < lines.length && !lines[i].trim().includes("</artifact>")) {
+          artLines.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length && lines[i].trim().includes("</artifact>")) {
+          i++;
+        }
+
+        const artContent = artLines.join("\n");
+        elements.push(
+          <Artifact key={`art-${i}`} title={artTitle} type={artType}>
+            <ArtifactHeader title={artTitle} type={artType} copyValue={artContent} />
+            <ArtifactContent>
+              <pre className="font-mono text-xs overflow-x-auto whitespace-pre-wrap">
+                {artContent}
+              </pre>
+            </ArtifactContent>
+          </Artifact>
+        );
+        continue;
+      }
 
       // Code Block with shadcn CodeBlock primitive
       if (line.startsWith("```")) {
@@ -1100,7 +1246,10 @@ export default function WeberChat() {
       {/* ----------------- MAIN CHAT INSET ----------------- */}
       <SidebarInset className="relative flex flex-col flex-1 h-dvh max-h-dvh overflow-hidden bg-background">
         {/* Top Chat Bar */}
-        <WeberTopChatBar activeTitle={activeTitle} hasMessages={messages.length > 0} />
+        <WeberTopChatBar
+          activeTitle={activeTitle}
+          hasMessages={messages.length > 0}
+        />
 
         {/* Ambient background glows */}
         <div className="absolute top-16 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-sky-500/[0.04] dark:bg-sky-500/[0.07] blur-[150px] rounded-full pointer-events-none -z-10" />
@@ -1130,33 +1279,64 @@ export default function WeberChat() {
                 }}
                 className="relative"
               >
-                <div
-                  className={cn(
-                    "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30 backdrop-blur-xl transition-all shadow-xl",
-                    input.includes("\n") ? "items-end" : "items-center"
-                  )}
-                >
-                  <textarea
+                <PromptInput className="shadow-xl">
+                  <PromptInputTextarea
                     ref={textareaRef}
                     value={input}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="Ask me anything"
-                    rows={1}
+                    placeholder="Ask me anything..."
                     autoFocus
-                    className="flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-1.5 px-1 min-h-[24px] max-h-[180px] leading-6 transition-all"
+                    className={cn(
+                      isClearCommand(input) &&
+                        "font-mono text-emerald-600 dark:text-emerald-400 font-medium tracking-wide"
+                    )}
                   />
 
-                  <Button
-                    type="submit"
-                    disabled={!input.trim()}
-                    size="icon"
-                    className="h-8 w-8 rounded-full shrink-0 text-white transition-all cursor-pointer p-0 shadow-xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500"
-                    title="Send message (Enter)"
-                  >
-                    <ArrowUp className="h-4 w-4 text-white" />
-                  </Button>
-                </div>
+                  <PromptInputActions>
+                    <PromptInputTools>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setWebSearchEnabled((prev) => !prev)}
+                        className={cn(
+                          "h-7 px-2 text-xs gap-1.5 rounded-full transition-colors cursor-pointer",
+                          webSearchEnabled
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        )}
+                        title="Toggle Web Search"
+                      >
+                        <Globe className="size-3.5" />
+                        <span className="hidden sm:inline">Search</span>
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeepThinkEnabled((prev) => !prev)}
+                        className={cn(
+                          "h-7 px-2 text-xs gap-1.5 rounded-full transition-colors cursor-pointer",
+                          deepThinkEnabled
+                            ? "bg-red-500/10 text-red-600 dark:text-red-400 font-medium border border-red-500/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        )}
+                        title="Toggle Deep Reasoning"
+                      >
+                        <Brain className="size-3.5" />
+                        <span className="hidden sm:inline">Deep Think</span>
+                      </Button>
+                    </PromptInputTools>
+
+                    <PromptInputSubmit
+                      isLoading={isLoading}
+                      onStop={stopGeneration}
+                      disabled={!input.trim()}
+                    />
+                  </PromptInputActions>
+                </PromptInput>
 
                 <div className="flex items-center justify-center mt-2.5 px-1 text-[11px] text-muted-foreground text-center">
                   <span>Weber can make mistakes. Verify facts.</span>
@@ -1211,9 +1391,9 @@ export default function WeberChat() {
                                   )}
                                 >
                                   {isUser ? (
-                                    <div className="whitespace-pre-wrap break-words leading-relaxed">
+                                    <p className="whitespace-pre-wrap break-words leading-relaxed">
                                       {renderInline(msg.content, `usr-${msg.id}`)}
-                                    </div>
+                                    </p>
                                   ) : (
                                     <div>
                                       {msg.content ? (
@@ -1222,22 +1402,17 @@ export default function WeberChat() {
                                           return (
                                             <div className="space-y-3">
                                               {parsed.thinking && (
-                                                <Trace className="mb-2">
-                                                  <TraceCollapsible defaultOpen={parsed.isThinkingActive}>
-                                                    <TraceCollapsibleTrigger>
-                                                      <TraceLine status={parsed.isThinkingActive ? "running" : undefined}>
-                                                        <TraceTitle className="text-xs font-medium">
-                                                          {parsed.isThinkingActive ? "Thinking…" : "Thought"}
-                                                        </TraceTitle>
-                                                      </TraceLine>
-                                                    </TraceCollapsibleTrigger>
-                                                    <TraceCollapsibleContent>
-                                                      <div className="text-xs font-mono text-muted-foreground whitespace-pre-wrap leading-relaxed py-1">
-                                                        {parsed.thinking}
-                                                      </div>
-                                                    </TraceCollapsibleContent>
-                                                  </TraceCollapsible>
-                                                </Trace>
+                                                <Reasoning
+                                                  key={`reasoning-${msg.id}`}
+                                                  isStreaming={parsed.isThinkingActive}
+                                                  defaultOpen={false}
+                                                  className="mb-2"
+                                                >
+                                                  <ReasoningTrigger />
+                                                  <ReasoningContent>
+                                                    {parsed.thinking}
+                                                  </ReasoningContent>
+                                                </Reasoning>
                                               )}
                                               {parsed.message ? (
                                                 renderMessageContent(
@@ -1309,48 +1484,63 @@ export default function WeberChat() {
                 }}
                 className="relative"
               >
-                <div
-                  className={cn(
-                    "flex gap-2 px-3.5 py-2 rounded-2xl bg-card/90 border border-border/80 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30 backdrop-blur-xl transition-all shadow-lg",
-                    input.includes("\n") ? "items-end" : "items-center"
-                  )}
-                >
-                  <textarea
+                <PromptInput className="shadow-lg">
+                  <PromptInputTextarea
                     ref={textareaRef}
                     value={input}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
-                    placeholder="Ask me anything"
-                    rows={1}
+                    placeholder="Ask me anything..."
                     className={cn(
-                      "flex-1 bg-transparent border-0 outline-none resize-none text-sm text-foreground placeholder:text-muted-foreground/60 py-1.5 px-1 min-h-[24px] max-h-[160px] leading-6 transition-all",
-                      isClearCommand(input) && "font-mono text-emerald-600 dark:text-emerald-400 font-medium tracking-wide"
+                      isClearCommand(input) &&
+                        "font-mono text-emerald-600 dark:text-emerald-400 font-medium tracking-wide"
                     )}
                   />
 
-                  {isLoading ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={stopGeneration}
-                      className="h-8 w-8 rounded-full shrink-0 text-red-400 border-red-500/40 hover:bg-red-500/10 cursor-pointer p-0 flex items-center justify-center"
-                      title="Stop generation"
-                    >
-                      <Square className="h-3.5 w-3.5 fill-current" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
+                  <PromptInputActions>
+                    <PromptInputTools>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setWebSearchEnabled((prev) => !prev)}
+                        className={cn(
+                          "h-7 px-2 text-xs gap-1.5 rounded-full transition-colors cursor-pointer",
+                          webSearchEnabled
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        )}
+                        title="Toggle Web Search"
+                      >
+                        <Globe className="size-3.5" />
+                        <span className="hidden sm:inline">Search</span>
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeepThinkEnabled((prev) => !prev)}
+                        className={cn(
+                          "h-7 px-2 text-xs gap-1.5 rounded-full transition-colors cursor-pointer",
+                          deepThinkEnabled
+                            ? "bg-red-500/10 text-red-600 dark:text-red-400 font-medium border border-red-500/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        )}
+                        title="Toggle Deep Reasoning"
+                      >
+                        <Brain className="size-3.5" />
+                        <span className="hidden sm:inline">Deep Think</span>
+                      </Button>
+                    </PromptInputTools>
+
+                    <PromptInputSubmit
+                      isLoading={isLoading}
+                      onStop={stopGeneration}
                       disabled={!input.trim()}
-                      size="icon"
-                      className="h-8 w-8 rounded-full shrink-0 text-white transition-all cursor-pointer p-0 shadow-xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500"
-                      title={isClearCommand(input) ? "Execute clear (Enter)" : "Send message (Enter)"}
-                    >
-                      <ArrowUp className="h-4 w-4 text-white" />
-                    </Button>
-                  )}
-                </div>
+                    />
+                  </PromptInputActions>
+                </PromptInput>
 
                 <div className="flex items-center justify-center mt-2 px-1 text-[11px] text-muted-foreground text-center">
                   <span>Weber can make mistakes. Verify facts.</span>
