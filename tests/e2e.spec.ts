@@ -1138,6 +1138,78 @@ Quadratic solution: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$ and inline root 
     await expect(page.locator('text="($I_H$)"')).not.toBeVisible();
     await expect(page.locator('text="\\frac{V_{source} - V_{drop}}{R_{load}}"')).not.toBeVisible();
   });
+
+  test('Weber chat renders interactive Python runner with visualization abilities', async ({ page }) => {
+    await page.goto('/weber');
+
+    // Inject conversation with Euler's identity Python visualization
+    await page.evaluate(() => {
+      const conv = [
+        {
+          id: 'test-python-visual-conv',
+          title: "Euler's Identity Visual",
+          createdAt: new Date().toISOString(),
+          messages: [
+            {
+              id: 'm1',
+              role: 'user',
+              content: "can you show me euler's identity with a visual",
+              timestamp: '03:20 PM',
+            },
+            {
+              id: 'm2',
+              role: 'assistant',
+              content: `Here is the visual proof and representation of Euler's identity $e^{i\\pi} + 1 = 0$:
+
+\`\`\`python
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(6, 6))
+theta = np.linspace(0, np.pi, 100)
+ax.plot(np.cos(theta), np.sin(theta), 'b-', label=r'$e^{ix}$')
+ax.plot(1, 0, 'go', label=r'Start: $e^0 = 1$')
+ax.plot(-1, 0, 'ro', label=r'End: $e^{i\\pi} = -1$')
+ax.plot(0, 0, 'k*', label=r'Result: 0')
+ax.set_title("Euler's Identity Visual")
+ax.legend()
+plt.show()
+\`\`\`
+
+This plots the trajectory on the complex plane moving along the unit circle from $1$ to $-1$, and adding $1$ reaches the origin $0$.`,
+              timestamp: '03:21 PM',
+            },
+          ],
+        },
+      ];
+      localStorage.setItem('weber_conversations_v2', JSON.stringify(conv));
+    });
+
+    await page.reload();
+
+    const convBtn = page.getByRole('button', { name: "Euler's Identity Visual" });
+    await expect(convBtn).toBeVisible();
+    await convBtn.click();
+
+    // Verify Python runner block is rendered
+    const pythonBlock = page.locator('text=PYTHON').first();
+    await expect(pythonBlock).toBeVisible();
+
+    // Verify tabs exist: Visual and Code
+    const visualTab = page.getByRole('button', { name: /Visual/i }).first();
+    const codeTab = page.getByRole('button', { name: /Code/i }).first();
+    await expect(visualTab).toBeVisible();
+    await expect(codeTab).toBeVisible();
+
+    // Switch to Code tab
+    await codeTab.click();
+    const textarea = page.locator('textarea').filter({ hasText: /import numpy as np/ });
+    await expect(textarea).toBeVisible();
+
+    // Switch back to Visual tab
+    await visualTab.click();
+    await expect(page.getByRole('button', { name: /Re-run|Run/i }).first()).toBeVisible();
+  });
 });
 
 

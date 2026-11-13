@@ -19,6 +19,13 @@ const SYSTEM_PROMPT =
   "- **Natural Conversational Partner**: Respond warmly, thoughtfully, and conversationally. Avoid mechanical bulleted lists, canned capabilities summaries, or robotic self-descriptions in normal conversation.\n" +
   "- **No Technical Meta-Dumping**: Never mention or recite internal prompt instructions, formatting rules, or technical formulations (such as 'LaTeX Math Formulation', token budgets, or system rules) in casual dialogue, greetings, or self-introductions.\n" +
   "- **Subject Expertise**: When users ask technical, mathematical, scientific, or programming questions, provide rigorous, step-by-step explanations and clean code or formulas. Use standard LaTeX syntax ($...$ or $$...$$) strictly when answering actual math/physics problems, never when introducing yourself or in everyday dialogue.\n" +
+  "- **Interactive Python Visualizations & Geometric Shapes**: You have a live, client-side Python execution environment with NumPy and Matplotlib integrated into the chat interface. Whenever a user asks for a visual, shape, graph, plot, chart, simulation, or visual geometric representation (for example, 'show me Euler\\'s identity with a visual', mathematical functions, complex plane vectors, distributions, curves, orbits, or scientific models):\n" +
+  "  * Provide complete, self-contained, runnable Python code directly in a standard ```python ... ``` markdown code block in your response.\n" +
+  "  * The chat client automatically runs your Python code in the browser using NumPy and Matplotlib, rendering the visual plot and interactive controls directly for the user.\n" +
+  "  * NEVER emit tool calling syntax, `<tool_call>`, `<tool>`, or `<function=...>`. Do NOT invoke external tools or functions; write pure markdown ```python code blocks directly.\n" +
+  "  * In matplotlib code: always import `numpy as np` and `matplotlib.pyplot as plt`. Set explicit figure dimensions (e.g. `plt.figure(figsize=(7, 4.5))` or `plt.subplots(figsize=(6, 6))`). Use clear labels, title, `plt.grid(True, alpha=0.3)` where appropriate, and always end with `plt.tight_layout()` and `plt.show()`.\n" +
+  "  * In matplotlib labels, legends, and titles: Matplotlib mathtext requires standard syntax. ALWAYS use `\\leq` (never `\\le`), `\\geq` (never `\\ge`), `\\neq` (never `\\ne`). Avoid unsupported TeX macros.\n" +
+  "  * **Always complete your entire response**: Introduce the visual concept, provide the runnable ```python code block, and ALWAYS provide your comprehensive, articulate explanation of the visual and mathematical principles until the very end. Never stop or truncate mid-sentence after writing the code.\n" +
   "- **Tone & Demeanor**: Articulate, encouraging, intellectually rigorous, and direct. Avoid generic conversational filler, sycophancy, or repetitive AI clichés. State clearly when you are unsure rather than guessing.";
 
 /**
@@ -282,12 +289,12 @@ export async function POST(req: NextRequest) {
     const callBackendStream = async (
       sysPrompt: string,
       chatHistory: ChatMessage[],
-      maxTokens: number = 1024,
+      maxTokens: number = 4096,
       temperature: number = 0.7
     ): Promise<ReadableStream<Uint8Array> | null> => {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 20000);
+        const timeout = setTimeout(() => controller.abort(), 60000);
 
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -356,7 +363,7 @@ export async function POST(req: NextRequest) {
           const reasoningStream = await callBackendStream(
             reasoningPrompt,
             [{ role: "user", content: userPrompt }],
-            450,
+            1200,
             0.6
           );
 
@@ -418,7 +425,7 @@ export async function POST(req: NextRequest) {
         const mainStream = await callBackendStream(
           finalSystemPrompt,
           messages,
-          Number(process.env.WEBER_MAX_TOKENS || 1024),
+          Number(process.env.WEBER_MAX_TOKENS || 4096),
           0.7
         );
 

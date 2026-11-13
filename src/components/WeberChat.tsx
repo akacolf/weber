@@ -96,6 +96,12 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { WeberLogo } from "@/components/WeberLogo";
 import { Badge } from "@/components/ui/badge";
 import { MathRenderer } from "@/components/MathRenderer";
+import {
+  PythonRunnerBlock,
+  isPythonVisualCode,
+  executePythonBlock,
+} from "@/components/PythonRunnerBlock";
+import { pythonRunner } from "@/lib/pythonRunner";
 import { cn } from "@/lib/utils";
 
 export interface Message {
@@ -194,6 +200,7 @@ export default function WeberChat() {
   const [isClearingMessages, setIsClearingMessages] = useState(false);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [deepThinkEnabled, setDeepThinkEnabled] = useState(false);
+  const [executingMsgId, setExecutingMsgId] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -268,6 +275,9 @@ export default function WeberChat() {
             setConversations(parsed.filter((c: Conversation) => !placeholderIds.has(c.id)));
           }
         }
+
+        // Preload Pyodide WebAssembly runner in the background
+        pythonRunner.preload().catch(() => {});
       } catch {
         // ignore
       }
@@ -510,14 +520,13 @@ export default function WeberChat() {
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
                 accumulatedText += delta;
-                setMessages((prev) => {
-                  const updated = prev.map((msg) =>
+                setMessages((prev) =>
+                  prev.map((msg) =>
                     msg.id === assistantMsgId
                       ? { ...msg, content: accumulatedText }
                       : msg
-                  );
-                  return updated;
-                });
+                  )
+                );
                 if (isAtBottomRef.current) {
                   requestAnimationFrame(() => scrollToBottom(false));
                 }
@@ -542,6 +551,12 @@ export default function WeberChat() {
               };
             }
             return c;
+          });
+          try {
+            localStorage.setItem(CONVERSATIONS_STORAGE_KEY, JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
           });
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -587,10 +602,16 @@ export default function WeberChat() {
     if (!match) {
       return { thinking: null, isThinkingActive: false, message: raw };
     }
-    const thinking = match[1].trim();
+
+    const rawThinking = match[1].trim();
     const isThinkingActive = !raw.includes("</think>");
     const message = raw.replace(thinkRegex, "").trim();
-    return { thinking, isThinkingActive, message };
+
+    return {
+      thinking: rawThinking || null,
+      isThinkingActive,
+      message,
+    };
   };
 
   const INLINE_REGEX_SOURCE =
@@ -721,9 +742,10 @@ export default function WeberChat() {
   };
 
   // Render markdown helper (fenced code, LaTeX math, bold, lists, tables, headers, dividers)
-  const renderMessageContent = (content: string) => {
+  const renderMessageContent = (content: string, msgId: string = "msg") => {
     const lines = content.split("\n");
     const elements: React.ReactNode[] = [];
+    let visualBlockCounter = 0;
     let i = 0;
 
     while (i < lines.length) {
@@ -769,27 +791,75 @@ export default function WeberChat() {
         continue;
       }
 
-      // Tool block (<tool name="..." status="...">...</tool>)
-      if (trimmed.startsWith("<tool")) {
+      // Tool block (<tool name="..." status="...">...</tool>, <tool_call>...</tool_call>, or <function=...>)
+      if (
+        trimmed.startsWith("<tool") ||
+        trimmed.startsWith("<function=execute_python") ||
+        trimmed.startsWith("<function")
+      ) {
+        const isFunctionTag = trimmed.startsWith("<function");
         const nameMatch = trimmed.match(/name=["']([^"']+)["']/);
         const statusMatch = trimmed.match(/status=["']([^"']+)["']/);
         const toolName = nameMatch ? nameMatch[1] : "Tool Execution";
-        const toolStatus = (statusMatch ? statusMatch[1] : "completed") as any;
+        const toolStatus = (statusMatch ? statusMatch[1] : "completed") as "completed" | "running" | "error";
 
         const toolLines: string[] = [];
-        i++;
-        while (i < lines.length && !lines[i].trim().includes("</tool>")) {
+        if (!isFunctionTag) {
+          i++;
+        }
+        while (
+          i < lines.length &&
+          !lines[i].trim().includes("</tool>") &&
+          !lines[i].trim().includes("</tool_call>") &&
+          !lines[i].trim().includes("</function>")
+        ) {
           toolLines.push(lines[i]);
           i++;
         }
-        if (i < lines.length && lines[i].trim().includes("</tool>")) {
+        if (
+          i < lines.length &&
+          (lines[i].trim().includes("</tool>") ||
+            lines[i].trim().includes("</tool_call>") ||
+            lines[i].trim().includes("</function>"))
+        ) {
           i++;
         }
 
         const toolBody = toolLines.join("\n").trim();
+
+        // Check if toolBody contains python code
+        const pyCodeMatch = toolBody.match(
+          /(?:```(?:python|py)\s*\n([\s\S]*?)```|<function=execute_python>([\s\S]*?)<\/function>|(?:import\s+(?:numpy|matplotlib|plt)[\s\S]*))/i
+        );
+        const extractedCode = pyCodeMatch ? (pyCodeMatch[1] || pyCodeMatch[2] || pyCodeMatch[0]).trim() : "";
+
+        if (extractedCode && isPythonVisualCode(extractedCode)) {
+          const blockId = `${msgId}-py-${visualBlockCounter++}`;
+          elements.push(
+            <PythonRunnerBlock
+              key={`tool-py-${i}`}
+              blockId={blockId}
+              code={extractedCode}
+              mode="combined"
+              isStreaming={isLoading}
+            />
+          );
+          continue;
+        }
+
+        // Clean up empty or broken <function=execute_python> tags with no useful body
+        const cleanedBody = toolBody
+          .replace(/<\/?function(?:=[^>]+)?>/gi, "")
+          .replace(/<\/?tool_call>/gi, "")
+          .trim();
+
+        if (!cleanedBody) {
+          continue;
+        }
+
         elements.push(
           <Tool key={`tool-${i}`} name={toolName} status={toolStatus}>
-            {toolBody && <ToolResult result={toolBody} />}
+            <ToolResult result={cleanedBody} />
           </Tool>
         );
         continue;
@@ -826,7 +896,7 @@ export default function WeberChat() {
         continue;
       }
 
-      // Code Block with shadcn CodeBlock primitive
+      // Code Block with shadcn CodeBlock primitive or interactive Python runner
       if (line.startsWith("```")) {
         const lang = line.slice(3).trim();
         const codeLines: string[] = [];
@@ -836,25 +906,63 @@ export default function WeberChat() {
           i++;
         }
         const fullCode = codeLines.join("\n");
+        const lowerLang = lang.toLowerCase();
 
-        elements.push(
-          <CodeBlock
-            key={`code-${i}`}
-            className="my-3 font-mono text-xs shadow-md border-border/70 overflow-hidden"
-          >
-            <CodeBlockHeader className="justify-between px-3 py-2 bg-muted/30 border-b border-border/40">
-              <CodeBlockTitle className="uppercase tracking-wider text-[11px] font-semibold text-muted-foreground">
-                {lang || "code"}
-              </CodeBlockTitle>
-              <CodeBlockActions>
-                <CodeBlockCopyButton value={fullCode} />
-              </CodeBlockActions>
-            </CodeBlockHeader>
-            <CodeBlockContent className="p-3 text-[12.5px] leading-relaxed bg-neutral-950/70 dark:bg-neutral-950/90 text-neutral-100">
-              {fullCode}
-            </CodeBlockContent>
-          </CodeBlock>
-        );
+        // If Python
+        if (lowerLang === "python" || lowerLang === "py") {
+          const isVisual = isPythonVisualCode(fullCode);
+          if (isVisual) {
+            const blockId = `${msgId}-py-${visualBlockCounter++}`;
+            // Render the visual shape cleanly on the response (no green dot, no Pyodide WASM badge, no star in spinner)
+            elements.push(
+              <PythonRunnerBlock
+                key={`py-shape-${i}`}
+                blockId={blockId}
+                code={fullCode}
+                mode="combined"
+                isStreaming={isLoading}
+              />
+            );
+          } else {
+            elements.push(
+              <CodeBlock
+                key={`code-${i}`}
+                className="my-3 font-mono text-xs shadow-md border-border/70 overflow-hidden"
+              >
+                <CodeBlockHeader className="justify-between px-3 py-2 bg-muted/30 border-b border-border/40">
+                  <CodeBlockTitle className="uppercase tracking-wider text-[11px] font-semibold text-muted-foreground">
+                    python
+                  </CodeBlockTitle>
+                  <CodeBlockActions>
+                    <CodeBlockCopyButton value={fullCode} />
+                  </CodeBlockActions>
+                </CodeBlockHeader>
+                <CodeBlockContent className="p-3 text-[12.5px] leading-relaxed bg-neutral-950/70 dark:bg-neutral-950/90 text-neutral-100">
+                  {fullCode}
+                </CodeBlockContent>
+              </CodeBlock>
+            );
+          }
+        } else {
+          elements.push(
+            <CodeBlock
+              key={`code-${i}`}
+              className="my-3 font-mono text-xs shadow-md border-border/70 overflow-hidden"
+            >
+              <CodeBlockHeader className="justify-between px-3 py-2 bg-muted/30 border-b border-border/40">
+                <CodeBlockTitle className="uppercase tracking-wider text-[11px] font-semibold text-muted-foreground">
+                  {lang || "code"}
+                </CodeBlockTitle>
+                <CodeBlockActions>
+                  <CodeBlockCopyButton value={fullCode} />
+                </CodeBlockActions>
+              </CodeBlockHeader>
+              <CodeBlockContent className="p-3 text-[12.5px] leading-relaxed bg-neutral-950/70 dark:bg-neutral-950/90 text-neutral-100">
+                {fullCode}
+              </CodeBlockContent>
+            </CodeBlock>
+          );
+        }
         i++;
         continue;
       }
@@ -1399,28 +1507,95 @@ export default function WeberChat() {
                                       {msg.content ? (
                                         (() => {
                                           const parsed = parseThinkingContent(msg.content);
+                                          // Extract any visual python blocks
+                                          const pyRegex = /```(?:python|py)\s*\n([\s\S]*?)```/gi;
+                                          const pyBlocks: { id: string; code: string }[] = [];
+                                          let pMatch: RegExpExecArray | null;
+                                          let pIdx = 0;
+                                          while ((pMatch = pyRegex.exec(msg.content)) !== null) {
+                                            const pCode = pMatch[1];
+                                            if (isPythonVisualCode(pCode)) {
+                                              pyBlocks.push({
+                                                id: `${msg.id}-py-${pIdx++}`,
+                                                code: pCode,
+                                              });
+                                            }
+                                          }
+
+                                          const hasVisualBlocksInResponse = Boolean(
+                                            parsed.message &&
+                                              /```(?:python|py)[\s\S]*?(?:matplotlib|plt\.|plot\(|scatter\(|imshow\(|figure\()/i.test(
+                                                parsed.message
+                                              )
+                                          );
+                                          const hasVisualBlocksInThinkingOnly =
+                                            Boolean(parsed.thinking) &&
+                                            pyBlocks.length > 0 &&
+                                            !hasVisualBlocksInResponse;
+                                          const hasReasoning = Boolean(parsed.thinking);
+
                                           return (
                                             <div className="space-y-3">
-                                              {parsed.thinking && (
+                                              {hasReasoning && (
                                                 <Reasoning
                                                   key={`reasoning-${msg.id}`}
                                                   isStreaming={parsed.isThinkingActive}
                                                   defaultOpen={false}
                                                   className="w-full"
                                                 >
-                                                  <ReasoningTrigger />
+                                                  <ReasoningTrigger>
+                                                    {parsed.isThinkingActive || executingMsgId === msg.id ? (
+                                                      executingMsgId === msg.id ? (
+                                                        "Thinking • Executing code…"
+                                                      ) : (
+                                                        "Thinking…"
+                                                      )
+                                                    ) : pyBlocks.length > 0 ? (
+                                                      <span>Thought • Code executed</span>
+                                                    ) : (
+                                                      <span>Thought</span>
+                                                    )}
+                                                  </ReasoningTrigger>
                                                   <ReasoningContent>
-                                                    {parsed.thinking}
+                                                    {parsed.thinking && (
+                                                      <div className="whitespace-pre-wrap break-words mb-2">
+                                                        {parsed.thinking}
+                                                      </div>
+                                                    )}
+                                                    {pyBlocks.map((b) => (
+                                                      <PythonRunnerBlock
+                                                        key={`thought-py-${b.id}`}
+                                                        blockId={b.id}
+                                                        code={b.code}
+                                                        mode="thought"
+                                                        isStreaming={isLoading}
+                                                      />
+                                                    ))}
                                                   </ReasoningContent>
                                                 </Reasoning>
                                               )}
+
+                                              {/* If visual blocks were in thinking only, render the shape at top of response */}
+                                              {hasVisualBlocksInThinkingOnly &&
+                                                pyBlocks.map((b) => (
+                                                  <PythonRunnerBlock
+                                                    key={`shape-top-${b.id}`}
+                                                    blockId={b.id}
+                                                    code={b.code}
+                                                    mode="combined"
+                                                    isStreaming={isLoading}
+                                                  />
+                                                ))}
+
                                               {parsed.message ? (
                                                 renderMessageContent(
-                                                  parsed.message
+                                                  parsed.message,
+                                                  msg.id
                                                 )
                                               ) : parsed.isThinkingActive ? null : (
                                                 renderMessageContent(
-                                                  msg.content
+                                                  msg.content,
+                                                  msg.id
                                                 )
                                               )}
                                             </div>
