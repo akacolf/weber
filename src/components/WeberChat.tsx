@@ -553,12 +553,6 @@ export default function WeberChat() {
             return c;
           });
           try {
-            localStorage.setItem(CONVERSATIONS_STORAGE_KEY, JSON.stringify(updated));
-          } catch {}
-          return updated;
-        });
-          });
-          try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
           } catch {}
           return updated;

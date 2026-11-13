@@ -118,12 +118,12 @@ try:
             if 'neq' in _mt.tex2uni and 'ne' not in _mt.tex2uni:
                 _mt.tex2uni['ne'] = _mt.tex2uni['neq']
         if hasattr(_mt, 'latex_to_bakoma'):
-            if r'\leq' in _mt.latex_to_bakoma and r'\le' not in _mt.latex_to_bakoma:
-                _mt.latex_to_bakoma[r'\le'] = _mt.latex_to_bakoma[r'\leq']
-            if r'\geq' in _mt.latex_to_bakoma and r'\ge' not in _mt.latex_to_bakoma:
-                _mt.latex_to_bakoma[r'\ge'] = _mt.latex_to_bakoma[r'\geq']
-            if r'\neq' in _mt.latex_to_bakoma and r'\ne' not in _mt.latex_to_bakoma:
-                _mt.latex_to_bakoma[r'\ne'] = _mt.latex_to_bakoma[r'\neq']
+            if r'\\leq' in _mt.latex_to_bakoma and r'\\le' not in _mt.latex_to_bakoma:
+                _mt.latex_to_bakoma[r'\\le'] = _mt.latex_to_bakoma[r'\\leq']
+            if r'\\geq' in _mt.latex_to_bakoma and r'\\ge' not in _mt.latex_to_bakoma:
+                _mt.latex_to_bakoma[r'\\ge'] = _mt.latex_to_bakoma[r'\\geq']
+            if r'\\neq' in _mt.latex_to_bakoma and r'\\ne' not in _mt.latex_to_bakoma:
+                _mt.latex_to_bakoma[r'\\ne'] = _mt.latex_to_bakoma[r'\\neq']
     except Exception:
         pass
 
@@ -213,12 +213,12 @@ try:
         if 'neq' in _mt.tex2uni and 'ne' not in _mt.tex2uni:
             _mt.tex2uni['ne'] = _mt.tex2uni['neq']
     if hasattr(_mt, 'latex_to_bakoma'):
-        if r'\leq' in _mt.latex_to_bakoma and r'\le' not in _mt.latex_to_bakoma:
-            _mt.latex_to_bakoma[r'\le'] = _mt.latex_to_bakoma[r'\leq']
-        if r'\geq' in _mt.latex_to_bakoma and r'\ge' not in _mt.latex_to_bakoma:
-            _mt.latex_to_bakoma[r'\ge'] = _mt.latex_to_bakoma[r'\geq']
-        if r'\neq' in _mt.latex_to_bakoma and r'\ne' not in _mt.latex_to_bakoma:
-            _mt.latex_to_bakoma[r'\ne'] = _mt.latex_to_bakoma[r'\neq']
+        if r'\\leq' in _mt.latex_to_bakoma and r'\\le' not in _mt.latex_to_bakoma:
+            _mt.latex_to_bakoma[r'\\le'] = _mt.latex_to_bakoma[r'\\leq']
+        if r'\\geq' in _mt.latex_to_bakoma and r'\\ge' not in _mt.latex_to_bakoma:
+            _mt.latex_to_bakoma[r'\\ge'] = _mt.latex_to_bakoma[r'\\geq']
+        if r'\\neq' in _mt.latex_to_bakoma and r'\\ne' not in _mt.latex_to_bakoma:
+            _mt.latex_to_bakoma[r'\\ne'] = _mt.latex_to_bakoma[r'\\neq']
 except Exception:
     pass
 

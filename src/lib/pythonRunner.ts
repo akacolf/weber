@@ -150,7 +150,7 @@ class PythonRunnerService {
     return this.initPromise;
   }
 
-  public async runCode(code: string, timeoutMs: number = 25000): Promise<PythonResult> {
+  public async runCode(code: string, timeoutMs: number = 120000): Promise<PythonResult> {
     if (typeof window === "undefined") {
       throw new Error("Cannot execute Python on server");
     }
@@ -171,7 +171,7 @@ class PythonRunnerService {
         this.setStatus("error", "Execution timed out");
         resolve({
           stdout: "",
-          stderr: "Execution timed out (exceeded limit of 25 seconds).",
+          stderr: `Execution timed out (exceeded limit of ${Math.round(timeoutMs / 1000)} seconds).`,
           figures: [],
           executionTimeMs: timeoutMs,
           error: "Execution timed out",
